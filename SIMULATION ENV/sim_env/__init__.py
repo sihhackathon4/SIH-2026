@@ -10,14 +10,17 @@ records from disk in an incremental / continuous-ingestion fashion, and emits a
 Machine-Learning-scheduler-friendly NDJSON event log.
 """
 
-from .config import SimConfig
+from .config import SimConfig, FeatureStats
 from .ingest import RecordSource, FileRecordSource, parse_record_line, PulseRecord
 from .environment import RadioEnvironment, ActivePulse, SimulationEvent
 from .timeline_writer import TimelineWriter
 from .timeline_reader import iter_events, read_meta_only, rebuild_frames
+from .splits import assign_split, split_files
+from .dataset import PulseWindow, WindowCollector, iter_episode_windows
 
 __all__ = [
     "SimConfig",
+    "FeatureStats",
     "RecordSource",
     "FileRecordSource",
     "parse_record_line",
@@ -29,6 +32,11 @@ __all__ = [
     "iter_events",
     "read_meta_only",
     "rebuild_frames",
+    "assign_split",
+    "split_files",
+    "PulseWindow",
+    "WindowCollector",
+    "iter_episode_windows",
 ]
 
 __version__ = "0.1.0"
