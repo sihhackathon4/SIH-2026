@@ -89,3 +89,54 @@ class SimConfig:
             self.inputs = [self.inputs]
         if self.snapshot_interval_us is not None:
             self.snapshot_interval_us = max(0, self.snapshot_interval_us)
+
+
+@dataclass
+class FeatureStats:
+    """Per-feature normalization statistics (mean/std), fit once on train data.
+
+    A deinterleaving transformer needs normalized inputs -- the raw features
+    span wildly different scales (frequency in the thousands of MHz, pulse
+    width sometimes below 0.01 us). Fit this once on the *training* split
+    only, then reuse the exact same stats for validation/test/inference --
+    never refit on new data, or train/inference will silently skew.
+    """
+
+    mean: dict = field(default_factory=dict)
+    std: dict = field(default_factory=dict)
+
+    def normalize(self, feature: str, value: float) -> float:
+        m = self.mean.get(feature, 0.0)
+        s = self.std.get(feature, 1.0) or 1.0
+        return (value - m) / s
+
+    def to_dict(self) -> dict:
+        return {"mean": dict(self.mean), "std": dict(self.std)}
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "FeatureStats":
+        return cls(mean=dict(d.get("mean", {})), std=dict(d.get("std", {})))
+
+    @classmethod
+    def fit(cls, records: Iterable, fields: Sequence[str] = FEATURE_FIELDS) -> "FeatureStats":
+        """Compute mean/std per feature over an iterable of PulseRecord objects.
+
+        Streams the iterable once (does not require it to fit in memory).
+        """
+        import math
+
+        sums = {f: 0.0 for f in fields}
+        sumsq = {f: 0.0 for f in fields}
+        n = 0
+        for rec in records:
+            values = dict(zip(FEATURE_FIELDS, rec.data))
+            for f in fields:
+                v = float(values[f])
+                sums[f] += v
+                sumsq[f] += v * v
+            n += 1
+        if n == 0:
+            raise ValueError("cannot fit FeatureStats on zero records")
+        mean = {f: sums[f] / n for f in fields}
+        std = {f: math.sqrt(max(sumsq[f] / n - mean[f] ** 2, 0.0)) or 1.0 for f in fields}
+        return cls(mean=mean, std=std)
