@@ -47,6 +47,7 @@ class PulseRecord:
     aoa_deg: float
     emitter_id: int
     data: tuple = field(repr=False)
+    source_id: str = ""
 
     def as_dict(self, fields: Sequence[str]) -> Dict[str, float]:
         values = (self.toa_us, self.frequency_mhz, self.pulse_width_us,
@@ -54,12 +55,28 @@ class PulseRecord:
         return dict(zip(fields, values))
 
 
-def parse_record_line(line: str) -> Optional[PulseRecord]:
+def parse_record_line(
+    line: str, source_id: str = "", allow_nonfinite: bool = True
+) -> Optional[PulseRecord]:
     """Parse a single ``record_N: ...`` line.
 
     Returns ``None`` when the line is a header / non-record line. Raises
     ``ValueError`` for malformed record lines so ingestion fails loudly on
-    corrupt data rather than silently skipping pulses.
+    corrupt data rather than silently skipping pulses. ``source_id`` is
+    stamped onto the resulting record unchanged (e.g. the originating file's
+    name), so downstream consumers -- notably ML dataset splitting -- can
+    trace every pulse back to its recording/session without re-parsing files.
+
+    ``allow_nonfinite`` controls ``frequency_mhz``/``amplitude_db``/
+    ``aoa_deg`` (NOT ``pulse_width_us``, which has its own explicit handling
+    downstream in ``RadioEnvironment``): a real, sizeable slice of the source
+    corpus contains literal ``inf`` values in these fields (confirmed: 12 of
+    46 files, up to ~96% of a file's records). ``True`` (default) preserves
+    the original lenient behavior. Pass ``False`` when building an ML
+    dataset, where silently training on ``inf``/``nan`` features would
+    corrupt every statistic and gradient computed from them -- doing so
+    raises ``ValueError`` on those records instead, so you consciously
+    decide (upstream) whether to skip, clamp, or otherwise fix them.
     """
     m = _RECORD_RE.search(line)
     if m is None:
@@ -70,6 +87,11 @@ def parse_record_line(line: str) -> Optional[PulseRecord]:
             raise ValueError(f"expected 5 feature values, got {len(toks)}")
         toa, freq, pw, amp, aoa = (float(t) for t in toks)
         label = int(m.group("label"))
+        if not allow_nonfinite:
+            import math
+            for name, v in (("frequency_mhz", freq), ("amplitude_db", amp), ("aoa_deg", aoa)):
+                if not math.isfinite(v):
+                    raise ValueError(f"non-finite {name}={v!r}")
     except ValueError as exc:
         raise ValueError(f"malformed record line: {line!r} ({exc})") from exc
     return PulseRecord(
@@ -80,14 +102,16 @@ def parse_record_line(line: str) -> Optional[PulseRecord]:
         aoa_deg=aoa,
         emitter_id=label,
         data=(toa, freq, pw, amp, aoa),
+        source_id=source_id,
     )
 
 
-def _iter_records(path: Path) -> Iterator[PulseRecord]:
+def _iter_records(path: Path, allow_nonfinite: bool = True) -> Iterator[PulseRecord]:
     """Yield every record from one file, in file order (assumed sorted by ToA)."""
+    source_id = path.stem  # e.g. "output_0" -- stable, human-readable episode tag
     with open(path, "r", encoding="utf-8") as fh:
         for line in fh:
-            rec = parse_record_line(line)
+            rec = parse_record_line(line, source_id=source_id, allow_nonfinite=allow_nonfinite)
             if rec is not None:
                 yield rec
 
@@ -122,9 +146,11 @@ class FileRecordSource:
         self,
         paths: Sequence[Union[str, Path]],
         resolver: Optional[_Resolver] = None,
+        allow_nonfinite: bool = True,
     ):
         self._paths = list(paths)
         self._resolver = resolver or _DefaultResolver()
+        self._allow_nonfinite = allow_nonfinite
         self._files: Iterable[Iterable[PulseRecord]] = []
 
     def _prepare(self) -> None:
@@ -136,7 +162,7 @@ class FileRecordSource:
             {r for r in resolved if r.is_file()},
             key=lambda r: r.name,
         )
-        self._files = [_iter_records(p) for p in resolved]
+        self._files = [_iter_records(p, allow_nonfinite=self._allow_nonfinite) for p in resolved]
 
     def __iter__(self) -> Iterator[PulseRecord]:
         self._prepare()
