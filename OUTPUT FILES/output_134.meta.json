@@ -1,0 +1,85 @@
+{
+  "attrs": {
+    "collection_time_s": 10.0,
+    "date_created": "2025-05-10T14:41:21.607521",
+    "description": "Synthetic PDWs generated from emitter library",
+    "num_pulses": 335,
+    "type": "synthetic"
+  },
+  "feature_names_source_order": [
+    "UTCTime",
+    "RF",
+    "PulseWidth",
+    "AOA",
+    "PA",
+    "Class"
+  ],
+  "feature_names_written_order": [
+    "UTCTime",
+    "RF",
+    "PulseWidth",
+    "PA",
+    "AOA"
+  ],
+  "transmitters": [
+    {
+      "function": "transmitter_9",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 5,
+        "freqs_mhz": [
+          3000.0,
+          3100.0,
+          3200.0,
+          3300.0,
+          3400.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.025,
+        "freq_variability_factor": 0.0007
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.5,
+          1.0,
+          1.5
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          50.0,
+          75.0,
+          100.0,
+          125.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 10.0,
+        "scan_start_angle": 238.674567498077,
+        "beam_width_deg": 1.8
+      },
+      "power_config": {
+        "power_w": 20000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          184.14588707861458,
+          19.347842859660876
+        ],
+        "travel_angle_deg": 200.0,
+        "speed_km_s": 0.0
+      }
+    }
+  ],
+  "transmitters_note": "label in records: is the row INDEX into this list, local to this file only -- NOT a global/cross-file emitter id. Different files have different transmitter counts and contents.",
+  "receiver_status": "empty at source (no attrs/data present) -- not a parsing gap, the generator never populated these fields"
+}

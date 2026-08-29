@@ -1,0 +1,2680 @@
+{
+  "attrs": {
+    "collection_time_s": 10.0,
+    "date_created": "2025-05-10T13:50:13.886201",
+    "description": "Synthetic PDWs generated from emitter library",
+    "num_pulses": 26872,
+    "type": "synthetic"
+  },
+  "feature_names_source_order": [
+    "UTCTime",
+    "RF",
+    "PulseWidth",
+    "AOA",
+    "PA",
+    "Class"
+  ],
+  "feature_names_written_order": [
+    "UTCTime",
+    "RF",
+    "PulseWidth",
+    "PA",
+    "AOA"
+  ],
+  "transmitters": [
+    {
+      "function": "transmitter_9",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 5,
+        "freqs_mhz": [
+          3000.0,
+          3100.0,
+          3200.0,
+          3300.0,
+          3400.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.025,
+        "freq_variability_factor": 0.0007
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.5,
+          1.0,
+          1.5
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          50.0,
+          75.0,
+          100.0,
+          125.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 10.0,
+        "scan_start_angle": 2.5373844984677385,
+        "beam_width_deg": 1.8
+      },
+      "power_config": {
+        "power_w": 20000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          142.22039909855815,
+          196.72146999733891
+        ],
+        "travel_angle_deg": 350.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_37",
+      "frequency_config": {
+        "freq_mode": "FixedMultiSimultaneous",
+        "freq_grp_size": 4,
+        "freqs_mhz": [
+          3100.0,
+          3300.0,
+          3500.0,
+          3700.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0004,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0006
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          1.0,
+          20.0,
+          100.0
+        ],
+        "pw_fixed_std_us": 0.005,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 5,
+        "pris_us": [
+          90.0,
+          110.0,
+          130.0,
+          150.0,
+          170.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 12.0,
+        "scan_start_angle": 144.24106124252748,
+        "beam_width_deg": 1.5
+      },
+      "power_config": {
+        "power_w": 5000000.0,
+        "gain": 38.0
+      },
+      "position_config": {
+        "start_position_km": [
+          200.00512900197643,
+          194.48096087574626
+        ],
+        "travel_angle_deg": 242.0,
+        "speed_km_s": 2.833
+      }
+    },
+    {
+      "function": "transmitter_25",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1372.8972018009538
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.03,
+        "freq_variability_factor": 0.0008
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 4,
+        "pws_us": [
+          2.0,
+          100.0,
+          150.0,
+          200.0
+        ],
+        "pw_fixed_std_us": 0.01,
+        "pw_proporitional_variance_factor": 0.03
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          833.0,
+          909.0,
+          1000.0,
+          1111.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 6.0,
+        "scan_start_angle": 297.8104836974793,
+        "beam_width_deg": 1.2
+      },
+      "power_config": {
+        "power_w": 25000.0,
+        "gain": 42.0
+      },
+      "position_config": {
+        "start_position_km": [
+          211.3141488716649,
+          74.65668230886236
+        ],
+        "travel_angle_deg": 303.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_26",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          2800.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          1.57,
+          4.5
+        ],
+        "pw_fixed_std_us": 0.005,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 4,
+        "pris_us": [
+          800.0,
+          1000.0,
+          1200.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 4.752840460852701,
+        "scan_start_angle": 156.36777950654368,
+        "beam_width_deg": 0.95
+      },
+      "power_config": {
+        "power_w": 750000.0,
+        "gain": 45.5
+      },
+      "position_config": {
+        "start_position_km": [
+          247.85919059176453,
+          205.1411774398957
+        ],
+        "travel_angle_deg": 190.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_55",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          26.70333655814451
+        ],
+        "freq_fixed_std_mhz": 0.1,
+        "freq_proporitional_variance_factor": 0.005,
+        "freq_decay_factor": 0.1,
+        "freq_variability_factor": 0.01
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          300.0
+        ],
+        "pw_fixed_std_us": 1.0,
+        "pw_proporitional_variance_factor": 0.05
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          500.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 0.1,
+        "scan_start_angle": 24.806977063939357,
+        "beam_width_deg": 3.0
+      },
+      "power_config": {
+        "power_w": 100000.0,
+        "gain": 25.0
+      },
+      "position_config": {
+        "start_position_km": [
+          136.65380118453146,
+          180.1463937543207
+        ],
+        "travel_angle_deg": 76.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_50",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1270.0
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0002,
+        "freq_decay_factor": 0.015,
+        "freq_variability_factor": 0.0003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          1.5
+        ],
+        "pw_fixed_std_us": 0.001,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          1000.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 0.5,
+        "scan_start_angle": 172.11196106095582,
+        "beam_width_deg": 0.2
+      },
+      "power_config": {
+        "power_w": 700000.0,
+        "gain": 50.0
+      },
+      "position_config": {
+        "start_position_km": [
+          60.808015620320816,
+          35.65689479129261
+        ],
+        "travel_angle_deg": 191.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_15",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 6,
+        "freqs_mhz": [
+          3100.0,
+          3150.0,
+          3200.0,
+          3250.0,
+          3300.0,
+          3350.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.03,
+        "freq_variability_factor": 0.0007
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.5,
+          1.0,
+          2.0
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.025
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 6,
+        "pris_us": [
+          100.0,
+          110.0,
+          120.0,
+          130.0,
+          140.0,
+          150.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 6.0,
+        "scan_start_angle": 60.44928714024759,
+        "beam_width_deg": 0.55
+      },
+      "power_config": {
+        "power_w": 850000.0,
+        "gain": 43.0
+      },
+      "position_config": {
+        "start_position_km": [
+          50.86963734063959,
+          225.1314716425185
+        ],
+        "travel_angle_deg": 38.0,
+        "speed_km_s": 20.394
+      }
+    },
+    {
+      "function": "transmitter_10",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 8,
+        "freqs_mhz": [
+          3000.0,
+          3050.0,
+          3100.0,
+          3150.0,
+          3200.0,
+          3250.0,
+          3300.0,
+          3350.0
+        ],
+        "freq_fixed_std_mhz": 0.0015,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.3,
+          0.6,
+          1.2
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.015
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 5,
+        "pris_us": [
+          100.0,
+          110.0,
+          120.0,
+          130.0,
+          140.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 12.0,
+        "scan_start_angle": 294.218531488894,
+        "beam_width_deg": 0.4
+      },
+      "power_config": {
+        "power_w": 8000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          161.9525850767458,
+          152.27230542448734
+        ],
+        "travel_angle_deg": 189.0,
+        "speed_km_s": 201.632
+      }
+    },
+    {
+      "function": "transmitter_7",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          9500.0
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.01,
+        "freq_variability_factor": 0.0004
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.8
+        ],
+        "pw_fixed_std_us": 0.0025,
+        "pw_proporitional_variance_factor": 0.018
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          120.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 20.0,
+        "scan_start_angle": 132.47208624201744,
+        "beam_width_deg": 1.5
+      },
+      "power_config": {
+        "power_w": 5000.0,
+        "gain": 35.0
+      },
+      "position_config": {
+        "start_position_km": [
+          49.64795924943438,
+          34.32876555440254
+        ],
+        "travel_angle_deg": 14.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_22",
+      "frequency_config": {
+        "freq_mode": "HoppingLinear",
+        "freq_grp_size": 4,
+        "freqs_mhz": [
+          1200.0,
+          1300.0,
+          1400.0,
+          1500.0
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.015,
+        "freq_variability_factor": 0.0004
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          1.5
+        ],
+        "pw_fixed_std_us": 0.004,
+        "pw_proporitional_variance_factor": 0.025
+      },
+      "pri_config": {
+        "pri_mode": "Jittered",
+        "pri_group_size": 2,
+        "pris_us": [
+          62.78107477418888,
+          56.07862587433904,
+          64.35917772337993
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 12.0,
+        "scan_start_angle": 134.68176381402918,
+        "beam_width_deg": 1.2
+      },
+      "power_config": {
+        "power_w": 5000.0,
+        "gain": 42.0
+      },
+      "position_config": {
+        "start_position_km": [
+          234.80597452535216,
+          154.4637428691224
+        ],
+        "travel_angle_deg": 321.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_10",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 8,
+        "freqs_mhz": [
+          3000.0,
+          3050.0,
+          3100.0,
+          3150.0,
+          3200.0,
+          3250.0,
+          3300.0,
+          3350.0
+        ],
+        "freq_fixed_std_mhz": 0.0015,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.3,
+          0.6,
+          1.2
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.015
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 5,
+        "pris_us": [
+          100.0,
+          110.0,
+          120.0,
+          130.0,
+          140.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 12.0,
+        "scan_start_angle": 59.08874926490433,
+        "beam_width_deg": 0.4
+      },
+      "power_config": {
+        "power_w": 8000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          216.76767241371056,
+          21.18926684741104
+        ],
+        "travel_angle_deg": 164.0,
+        "speed_km_s": 183.064
+      }
+    },
+    {
+      "function": "transmitter_25",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1226.0243049728465
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.03,
+        "freq_variability_factor": 0.0008
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 4,
+        "pws_us": [
+          2.0,
+          100.0,
+          150.0,
+          200.0
+        ],
+        "pw_fixed_std_us": 0.01,
+        "pw_proporitional_variance_factor": 0.03
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          833.0,
+          909.0,
+          1000.0,
+          1111.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 6.0,
+        "scan_start_angle": 277.0577395293084,
+        "beam_width_deg": 1.2
+      },
+      "power_config": {
+        "power_w": 25000.0,
+        "gain": 42.0
+      },
+      "position_config": {
+        "start_position_km": [
+          173.3636054284471,
+          168.8803187415648
+        ],
+        "travel_angle_deg": 191.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_24",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          16000.0
+        ],
+        "freq_fixed_std_mhz": 0.007,
+        "freq_proporitional_variance_factor": 0.0012,
+        "freq_decay_factor": 0.04,
+        "freq_variability_factor": 0.0014
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.01
+        ],
+        "pw_fixed_std_us": 0.0003,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          0.37953414828635984
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 100.0,
+        "scan_start_angle": 136.24969884317807,
+        "beam_width_deg": 0.2
+      },
+      "power_config": {
+        "power_w": 20.0,
+        "gain": 45.0
+      },
+      "position_config": {
+        "start_position_km": [
+          102.24315304074841,
+          190.5187895611989
+        ],
+        "travel_angle_deg": 134.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_60",
+      "frequency_config": {
+        "freq_mode": "RandomRange",
+        "freq_grp_size": 2,
+        "freqs_mhz": [
+          2700.0,
+          3100.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0006
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          0.5,
+          1.0
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 3,
+        "pris_us": [
+          50.0,
+          75.0,
+          100.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 15.0,
+        "scan_start_angle": 344.4115281303197,
+        "beam_width_deg": 1.2
+      },
+      "power_config": {
+        "power_w": 10000.0,
+        "gain": 38.0
+      },
+      "position_config": {
+        "start_position_km": [
+          144.24337944094674,
+          136.77689248620248
+        ],
+        "travel_angle_deg": 325.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_51",
+      "frequency_config": {
+        "freq_mode": "RandomFixed",
+        "freq_grp_size": 2,
+        "freqs_mhz": [
+          5400.0,
+          5500.0,
+          5600.0,
+          5700.0
+        ],
+        "freq_fixed_std_mhz": 0.004,
+        "freq_proporitional_variance_factor": 0.0008,
+        "freq_decay_factor": 0.035,
+        "freq_variability_factor": 0.001
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.4
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Jittered",
+        "pri_group_size": 1,
+        "pris_us": [
+          29.12215989933522,
+          24.54137089084778,
+          30.00302462367896
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 20.0,
+        "scan_start_angle": 39.07002312464168,
+        "beam_width_deg": 1.4
+      },
+      "power_config": {
+        "power_w": 350.0,
+        "gain": 33.0
+      },
+      "position_config": {
+        "start_position_km": [
+          43.756220956639446,
+          122.26794056151546
+        ],
+        "travel_angle_deg": 171.0,
+        "speed_km_s": 38.671
+      }
+    },
+    {
+      "function": "transmitter_41",
+      "frequency_config": {
+        "freq_mode": "HoppingLinear",
+        "freq_grp_size": 5,
+        "freqs_mhz": [
+          2900.0,
+          3000.0,
+          3100.0,
+          3200.0,
+          3300.0
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0006,
+        "freq_decay_factor": 0.025,
+        "freq_variability_factor": 0.001
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          1.3273057616185047
+        ],
+        "pw_fixed_std_us": 0.004,
+        "pw_proporitional_variance_factor": 0.025
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          557.2413037652458
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 5.0,
+        "scan_start_angle": 7.1946382356433025,
+        "beam_width_deg": 1.3
+      },
+      "power_config": {
+        "power_w": 150000.0,
+        "gain": 35.0
+      },
+      "position_config": {
+        "start_position_km": [
+          208.99519697045727,
+          184.00206760957275
+        ],
+        "travel_angle_deg": 278.0,
+        "speed_km_s": 5.556
+      }
+    },
+    {
+      "function": "transmitter_29",
+      "frequency_config": {
+        "freq_mode": "RandomRange",
+        "freq_grp_size": 2,
+        "freqs_mhz": [
+          8000.0,
+          10000.0
+        ],
+        "freq_fixed_std_mhz": 0.0008,
+        "freq_proporitional_variance_factor": 0.0002,
+        "freq_decay_factor": 0.01,
+        "freq_variability_factor": 0.0003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.2680250859605887
+        ],
+        "pw_fixed_std_us": 0.001,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          5.0,
+          7.0,
+          9.0,
+          11.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 60.0,
+        "scan_start_angle": 46.9460754057243,
+        "beam_width_deg": 2.5
+      },
+      "power_config": {
+        "power_w": 9000.0,
+        "gain": 34.0
+      },
+      "position_config": {
+        "start_position_km": [
+          244.11169526579502,
+          22.727375821323697
+        ],
+        "travel_angle_deg": 172.0,
+        "speed_km_s": 359.023
+      }
+    },
+    {
+      "function": "transmitter_66",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          5500.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0007
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          0.5,
+          1.0
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 3,
+        "pris_us": [
+          100.0,
+          120.0,
+          140.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 30.0,
+        "scan_start_angle": 23.162275952781364,
+        "beam_width_deg": 1.0
+      },
+      "power_config": {
+        "power_w": 2000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          220.66485185269423,
+          18.433218208542907
+        ],
+        "travel_angle_deg": 87.0,
+        "speed_km_s": 32.085
+      }
+    },
+    {
+      "function": "transmitter_26",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          2800.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          1.57,
+          4.5
+        ],
+        "pw_fixed_std_us": 0.005,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 4,
+        "pris_us": [
+          800.0,
+          1000.0,
+          1200.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 4.348391626447438,
+        "scan_start_angle": 62.17338237094766,
+        "beam_width_deg": 0.95
+      },
+      "power_config": {
+        "power_w": 750000.0,
+        "gain": 45.5
+      },
+      "position_config": {
+        "start_position_km": [
+          59.23149237235326,
+          126.26456284364836
+        ],
+        "travel_angle_deg": 184.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_40",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 5,
+        "freqs_mhz": [
+          3000.0,
+          3200.0,
+          3400.0,
+          3600.0,
+          3800.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0004,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0006
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.5,
+          1.0,
+          1.5
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          50.0,
+          75.0,
+          100.0,
+          125.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 10.0,
+        "scan_start_angle": 7.7835414742161335,
+        "beam_width_deg": 1.8
+      },
+      "power_config": {
+        "power_w": 20000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          109.60321195782043,
+          190.12370678087075
+        ],
+        "travel_angle_deg": 222.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_20",
+      "frequency_config": {
+        "freq_mode": "HoppingLinear",
+        "freq_grp_size": 8,
+        "freqs_mhz": [
+          10000.0,
+          10200.0,
+          10400.0,
+          10600.0,
+          10800.0,
+          11000.0,
+          11200.0,
+          11400.0
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0002,
+        "freq_decay_factor": 0.01,
+        "freq_variability_factor": 0.0003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          0.36771619257539573,
+          0.6698048419302322,
+          0.10578082182344688
+        ],
+        "pw_fixed_std_us": 0.001,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Jittered",
+        "pri_group_size": 1,
+        "pris_us": [
+          11.150308249436305,
+          6.663920723495062,
+          10.937835227358235
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 60.0,
+        "scan_start_angle": 212.54806936100513,
+        "beam_width_deg": 2.5
+      },
+      "power_config": {
+        "power_w": 15000.0,
+        "gain": 30.0
+      },
+      "position_config": {
+        "start_position_km": [
+          222.71704688221786,
+          26.79067585679157
+        ],
+        "travel_angle_deg": 141.0,
+        "speed_km_s": 462.465
+      }
+    },
+    {
+      "function": "transmitter_39",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          76500.0
+        ],
+        "freq_fixed_std_mhz": 0.06,
+        "freq_proporitional_variance_factor": 0.004,
+        "freq_decay_factor": 0.07,
+        "freq_variability_factor": 0.003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.02
+        ],
+        "pw_fixed_std_us": 0.0005,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          10.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 60.0,
+        "scan_start_angle": 189.69130785857678,
+        "beam_width_deg": 0.3
+      },
+      "power_config": {
+        "power_w": 15.0,
+        "gain": 38.0
+      },
+      "position_config": {
+        "start_position_km": [
+          93.39658694584773,
+          144.93742987737332
+        ],
+        "travel_angle_deg": 37.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_33",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          2800.0
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.015,
+        "freq_variability_factor": 0.0004
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          1.57,
+          4.5,
+          10.0
+        ],
+        "pw_fixed_std_us": 0.006,
+        "pw_proporitional_variance_factor": 0.03
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 2,
+        "pris_us": [
+          800.0,
+          1000.0,
+          1200.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 4.0,
+        "scan_start_angle": 320.6226508645631,
+        "beam_width_deg": 1.0
+      },
+      "power_config": {
+        "power_w": 750000.0,
+        "gain": 45.0
+      },
+      "position_config": {
+        "start_position_km": [
+          96.94492871825736,
+          26.94001020431383
+        ],
+        "travel_angle_deg": 253.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_40",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 5,
+        "freqs_mhz": [
+          3000.0,
+          3200.0,
+          3400.0,
+          3600.0,
+          3800.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0004,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0006
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.5,
+          1.0,
+          1.5
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          50.0,
+          75.0,
+          100.0,
+          125.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 10.0,
+        "scan_start_angle": 293.26775502609865,
+        "beam_width_deg": 1.8
+      },
+      "power_config": {
+        "power_w": 20000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          38.98191374331289,
+          234.07980259794402
+        ],
+        "travel_angle_deg": 18.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_35",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          34604.63248721356
+        ],
+        "freq_fixed_std_mhz": 0.01,
+        "freq_proporitional_variance_factor": 0.002,
+        "freq_decay_factor": 0.04,
+        "freq_variability_factor": 0.0015
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.05
+        ],
+        "pw_fixed_std_us": 0.0008,
+        "pw_proporitional_variance_factor": 0.012
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          5.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 60.0,
+        "scan_start_angle": 137.171076446826,
+        "beam_width_deg": 0.4
+      },
+      "power_config": {
+        "power_w": 80.0,
+        "gain": 45.0
+      },
+      "position_config": {
+        "start_position_km": [
+          191.6498885682487,
+          87.28917436651918
+        ],
+        "travel_angle_deg": 189.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_23",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1600.0
+        ],
+        "freq_fixed_std_mhz": 0.007,
+        "freq_proporitional_variance_factor": 0.002,
+        "freq_decay_factor": 0.08,
+        "freq_variability_factor": 0.003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.6
+        ],
+        "pw_fixed_std_us": 0.02,
+        "pw_proporitional_variance_factor": 0.08
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          50.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Omni",
+        "scan_rate_rpm": 0.0,
+        "scan_start_angle": 251.68939975748665,
+        "beam_width_deg": 360.0
+      },
+      "power_config": {
+        "power_w": 0.1,
+        "gain": 15.0
+      },
+      "position_config": {
+        "start_position_km": [
+          27.44834375850455,
+          36.45609418710238
+        ],
+        "travel_angle_deg": 309.0,
+        "speed_km_s": 0.61
+      }
+    },
+    {
+      "function": "transmitter_2",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          4991.899130085104
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0006,
+        "freq_decay_factor": 0.03,
+        "freq_variability_factor": 0.0008
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          1.2842086338218723
+        ],
+        "pw_fixed_std_us": 0.004,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          39.87399848241424
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 30.0,
+        "scan_start_angle": 302.00726151778775,
+        "beam_width_deg": 2.5
+      },
+      "power_config": {
+        "power_w": 250000.0,
+        "gain": 35.0
+      },
+      "position_config": {
+        "start_position_km": [
+          20.02541951024511,
+          226.8166095527387
+        ],
+        "travel_angle_deg": 251.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_2",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          4327.146840027592
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0006,
+        "freq_decay_factor": 0.03,
+        "freq_variability_factor": 0.0008
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.9630962659731312
+        ],
+        "pw_fixed_std_us": 0.004,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          12.086657466921938
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 30.0,
+        "scan_start_angle": 289.3254087779038,
+        "beam_width_deg": 2.5
+      },
+      "power_config": {
+        "power_w": 250000.0,
+        "gain": 35.0
+      },
+      "position_config": {
+        "start_position_km": [
+          35.170580672124004,
+          1.0542794539387668
+        ],
+        "travel_angle_deg": 86.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_26",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          2800.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          1.57,
+          4.5
+        ],
+        "pw_fixed_std_us": 0.005,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 3,
+        "pris_us": [
+          800.0,
+          1000.0,
+          1200.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 4.690855231507183,
+        "scan_start_angle": 112.38139366324206,
+        "beam_width_deg": 0.95
+      },
+      "power_config": {
+        "power_w": 750000.0,
+        "gain": 45.5
+      },
+      "position_config": {
+        "start_position_km": [
+          36.77051451954458,
+          151.80026176337861
+        ],
+        "travel_angle_deg": 204.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_63",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          9000.0
+        ],
+        "freq_fixed_std_mhz": 0.005,
+        "freq_proporitional_variance_factor": 0.001,
+        "freq_decay_factor": 0.045,
+        "freq_variability_factor": 0.0012
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.04
+        ],
+        "pw_fixed_std_us": 0.0005,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          40.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 60.0,
+        "scan_start_angle": 39.872395304800754,
+        "beam_width_deg": 0.25
+      },
+      "power_config": {
+        "power_w": 40.0,
+        "gain": 35.0
+      },
+      "position_config": {
+        "start_position_km": [
+          162.4397860674189,
+          131.39164638814273
+        ],
+        "travel_angle_deg": 181.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_16",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          2953.0859617127403
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0006,
+        "freq_decay_factor": 0.025,
+        "freq_variability_factor": 0.0008
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          2.0,
+          6.0
+        ],
+        "pw_fixed_std_us": 0.01,
+        "pw_proporitional_variance_factor": 0.025
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 3,
+        "pris_us": [
+          300.0,
+          350.0,
+          400.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 7.5,
+        "scan_start_angle": 84.48995384549269,
+        "beam_width_deg": 1.6
+      },
+      "power_config": {
+        "power_w": 280000.0,
+        "gain": 36.0
+      },
+      "position_config": {
+        "start_position_km": [
+          245.6292658866531,
+          190.59495891412095
+        ],
+        "travel_angle_deg": 267.0,
+        "speed_km_s": 7.159
+      }
+    },
+    {
+      "function": "transmitter_10",
+      "frequency_config": {
+        "freq_mode": "HoppingSawtooth",
+        "freq_grp_size": 8,
+        "freqs_mhz": [
+          3000.0,
+          3050.0,
+          3100.0,
+          3150.0,
+          3200.0,
+          3250.0,
+          3300.0,
+          3350.0
+        ],
+        "freq_fixed_std_mhz": 0.0015,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.3,
+          0.6,
+          1.2
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.015
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 5,
+        "pris_us": [
+          100.0,
+          110.0,
+          120.0,
+          130.0,
+          140.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 12.0,
+        "scan_start_angle": 40.601035035567484,
+        "beam_width_deg": 0.4
+      },
+      "power_config": {
+        "power_w": 8000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          163.74697546684658,
+          152.39044074920355
+        ],
+        "travel_angle_deg": 192.0,
+        "speed_km_s": 372.348
+      }
+    },
+    {
+      "function": "transmitter_6",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1344.0109095417447
+        ],
+        "freq_fixed_std_mhz": 0.0015,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          100.0
+        ],
+        "pw_fixed_std_us": 0.08,
+        "pw_proporitional_variance_factor": 0.03
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          2000.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 6.0,
+        "scan_start_angle": 226.59465917364793,
+        "beam_width_deg": 1.4
+      },
+      "power_config": {
+        "power_w": 140000.0,
+        "gain": 41.0
+      },
+      "position_config": {
+        "start_position_km": [
+          146.4208611813732,
+          65.80223580762349
+        ],
+        "travel_angle_deg": 26.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_66",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          5500.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0007
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          0.5,
+          1.0
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 3,
+        "pris_us": [
+          100.0,
+          120.0,
+          140.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 30.0,
+        "scan_start_angle": 346.74665039696805,
+        "beam_width_deg": 1.0
+      },
+      "power_config": {
+        "power_w": 2000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          15.742615628939832,
+          141.70181185744906
+        ],
+        "travel_angle_deg": 26.0,
+        "speed_km_s": 28.58
+      }
+    },
+    {
+      "function": "transmitter_17",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1027.9073534338863
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0004,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          100.0
+        ],
+        "pw_fixed_std_us": 0.05,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          784.6151229879966
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 6.0,
+        "scan_start_angle": 137.49296563136474,
+        "beam_width_deg": 1.0
+      },
+      "power_config": {
+        "power_w": 150000.0,
+        "gain": 40.0
+      },
+      "position_config": {
+        "start_position_km": [
+          190.547776384973,
+          145.93147719425053
+        ],
+        "travel_angle_deg": 357.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_23",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1600.0
+        ],
+        "freq_fixed_std_mhz": 0.007,
+        "freq_proporitional_variance_factor": 0.002,
+        "freq_decay_factor": 0.08,
+        "freq_variability_factor": 0.003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.6
+        ],
+        "pw_fixed_std_us": 0.02,
+        "pw_proporitional_variance_factor": 0.08
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          50.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Omni",
+        "scan_rate_rpm": 0.0,
+        "scan_start_angle": 37.090950028002005,
+        "beam_width_deg": 360.0
+      },
+      "power_config": {
+        "power_w": 0.1,
+        "gain": 15.0
+      },
+      "position_config": {
+        "start_position_km": [
+          42.802216879996884,
+          245.8430982412667
+        ],
+        "travel_angle_deg": 97.0,
+        "speed_km_s": 1.209
+      }
+    },
+    {
+      "function": "transmitter_25",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1276.4809865483203
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.03,
+        "freq_variability_factor": 0.0008
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 4,
+        "pws_us": [
+          2.0,
+          100.0,
+          150.0,
+          200.0
+        ],
+        "pw_fixed_std_us": 0.01,
+        "pw_proporitional_variance_factor": 0.03
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          833.0,
+          909.0,
+          1000.0,
+          1111.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 6.0,
+        "scan_start_angle": 125.0075253210615,
+        "beam_width_deg": 1.2
+      },
+      "power_config": {
+        "power_w": 25000.0,
+        "gain": 42.0
+      },
+      "position_config": {
+        "start_position_km": [
+          162.44380179808857,
+          94.5331261481721
+        ],
+        "travel_angle_deg": 85.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_23",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          1600.0
+        ],
+        "freq_fixed_std_mhz": 0.007,
+        "freq_proporitional_variance_factor": 0.002,
+        "freq_decay_factor": 0.08,
+        "freq_variability_factor": 0.003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          0.6
+        ],
+        "pw_fixed_std_us": 0.02,
+        "pw_proporitional_variance_factor": 0.08
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          50.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Omni",
+        "scan_rate_rpm": 0.0,
+        "scan_start_angle": 191.8839029511563,
+        "beam_width_deg": 360.0
+      },
+      "power_config": {
+        "power_w": 0.1,
+        "gain": 15.0
+      },
+      "position_config": {
+        "start_position_km": [
+          152.39029615548995,
+          91.67610067185247
+        ],
+        "travel_angle_deg": 168.0,
+        "speed_km_s": 0.231
+      }
+    },
+    {
+      "function": "transmitter_44",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          9500.0
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0004
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          10.0
+        ],
+        "pw_fixed_std_us": 0.02,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          165.84577858198978
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 0.5,
+        "scan_start_angle": 154.75157744355923,
+        "beam_width_deg": 0.3
+      },
+      "power_config": {
+        "power_w": 1200.0,
+        "gain": 48.0
+      },
+      "position_config": {
+        "start_position_km": [
+          176.42321919244844,
+          101.42893786427568
+        ],
+        "travel_angle_deg": 79.0,
+        "speed_km_s": 210.185
+      }
+    },
+    {
+      "function": "transmitter_65",
+      "frequency_config": {
+        "freq_mode": "RandomFixed",
+        "freq_grp_size": 3,
+        "freqs_mhz": [
+          5000.0,
+          5200.0,
+          5400.0,
+          5600.0
+        ],
+        "freq_fixed_std_mhz": 0.0025,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.025,
+        "freq_variability_factor": 0.0007
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.5,
+          1.0,
+          2.0
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.018
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 4,
+        "pris_us": [
+          50.0,
+          100.0,
+          150.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 30.0,
+        "scan_start_angle": 30.203917596155524,
+        "beam_width_deg": 1.0
+      },
+      "power_config": {
+        "power_w": 12000.0,
+        "gain": 38.0
+      },
+      "position_config": {
+        "start_position_km": [
+          154.95746081331,
+          172.3712602363806
+        ],
+        "travel_angle_deg": 43.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_14",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          9300.0
+        ],
+        "freq_fixed_std_mhz": 0.004,
+        "freq_proporitional_variance_factor": 0.0008,
+        "freq_decay_factor": 0.03,
+        "freq_variability_factor": 0.001
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          0.3,
+          5.0
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.025
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 2,
+        "pris_us": [
+          50.0,
+          100.0,
+          150.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 15.0,
+        "scan_start_angle": 135.46205712307062,
+        "beam_width_deg": 2.0
+      },
+      "power_config": {
+        "power_w": 600.0,
+        "gain": 32.0
+      },
+      "position_config": {
+        "start_position_km": [
+          213.67952044797437,
+          17.27216403121451
+        ],
+        "travel_angle_deg": 286.0,
+        "speed_km_s": 371.569
+      }
+    },
+    {
+      "function": "transmitter_26",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          2800.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0005
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          1.57,
+          4.5
+        ],
+        "pw_fixed_std_us": 0.005,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 4,
+        "pris_us": [
+          800.0,
+          1000.0,
+          1200.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 3.850743924168496,
+        "scan_start_angle": 156.47304789978983,
+        "beam_width_deg": 0.95
+      },
+      "power_config": {
+        "power_w": 750000.0,
+        "gain": 45.5
+      },
+      "position_config": {
+        "start_position_km": [
+          69.73370638518998,
+          15.919295855349125
+        ],
+        "travel_angle_deg": 23.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_52",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          5600.0
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0006,
+        "freq_decay_factor": 0.025,
+        "freq_variability_factor": 0.0008
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          1.0,
+          2.0
+        ],
+        "pw_fixed_std_us": 0.004,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 3,
+        "pris_us": [
+          900.0,
+          1000.0,
+          1100.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 12.0,
+        "scan_start_angle": 176.6350881032128,
+        "beam_width_deg": 1.2
+      },
+      "power_config": {
+        "power_w": 25000.0,
+        "gain": 36.0
+      },
+      "position_config": {
+        "start_position_km": [
+          208.26202992781845,
+          67.13137773318745
+        ],
+        "travel_angle_deg": 277.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_46",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          4467.352745504911
+        ],
+        "freq_fixed_std_mhz": 0.003,
+        "freq_proporitional_variance_factor": 0.0007,
+        "freq_decay_factor": 0.035,
+        "freq_variability_factor": 0.0009
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          1.7862610806310504
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.025
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          23.960740933535416
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 29.95511429404759,
+        "scan_start_angle": 212.46097586625558,
+        "beam_width_deg": 2.5
+      },
+      "power_config": {
+        "power_w": 250000.0,
+        "gain": 35.0
+      },
+      "position_config": {
+        "start_position_km": [
+          155.56956124933217,
+          24.529056559931067
+        ],
+        "travel_angle_deg": 127.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_61",
+      "frequency_config": {
+        "freq_mode": "RandomRange",
+        "freq_grp_size": 2,
+        "freqs_mhz": [
+          150.0,
+          380.0
+        ],
+        "freq_fixed_std_mhz": 0.05,
+        "freq_proporitional_variance_factor": 0.002,
+        "freq_decay_factor": 0.07,
+        "freq_variability_factor": 0.003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          22.59061702599619,
+          35.914966176997666,
+          45.79890649562691
+        ],
+        "pw_fixed_std_us": 0.1,
+        "pw_proporitional_variance_factor": 0.02
+      },
+      "pri_config": {
+        "pri_mode": "SwitchDwell",
+        "pri_group_size": 3,
+        "pris_us": [
+          50.0,
+          100.0,
+          200.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 3.0,
+        "scan_start_angle": 24.167586788172102,
+        "beam_width_deg": 4.5
+      },
+      "power_config": {
+        "power_w": 1500000.0,
+        "gain": 28.0
+      },
+      "position_config": {
+        "start_position_km": [
+          25.756052654832384,
+          86.93369267606774
+        ],
+        "travel_angle_deg": 93.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_36",
+      "frequency_config": {
+        "freq_mode": "HoppingLinear",
+        "freq_grp_size": 4,
+        "freqs_mhz": [
+          9000.0,
+          9200.0,
+          9400.0,
+          9600.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0005,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0006
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          0.5,
+          20.0
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.018
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          50.0,
+          60.0,
+          70.0,
+          80.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 15.0,
+        "scan_start_angle": 318.29841973624576,
+        "beam_width_deg": 1.8
+      },
+      "power_config": {
+        "power_w": 8500.0,
+        "gain": 38.0
+      },
+      "position_config": {
+        "start_position_km": [
+          165.64990171470586,
+          168.77120100120743
+        ],
+        "travel_angle_deg": 62.0,
+        "speed_km_s": 249.091
+      }
+    },
+    {
+      "function": "transmitter_42",
+      "frequency_config": {
+        "freq_mode": "HoppingLinear",
+        "freq_grp_size": 6,
+        "freqs_mhz": [
+          9500.0,
+          9600.0,
+          9700.0,
+          9800.0,
+          9900.0,
+          10000.0
+        ],
+        "freq_fixed_std_mhz": 0.002,
+        "freq_proporitional_variance_factor": 0.0004,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0006
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.5,
+          1.0,
+          2.0
+        ],
+        "pw_fixed_std_us": 0.003,
+        "pw_proporitional_variance_factor": 0.015
+      },
+      "pri_config": {
+        "pri_mode": "Jittered",
+        "pri_group_size": 1,
+        "pris_us": [
+          25.269585534327113,
+          16.317795306615118,
+          11.237682325607441
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 25.0,
+        "scan_start_angle": 88.33405252671545,
+        "beam_width_deg": 1.5
+      },
+      "power_config": {
+        "power_w": 25000.0,
+        "gain": 38.0
+      },
+      "position_config": {
+        "start_position_km": [
+          118.60229390270993,
+          180.32428384350968
+        ],
+        "travel_angle_deg": 195.0,
+        "speed_km_s": 17.609
+      }
+    },
+    {
+      "function": "transmitter_44",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          9500.0
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0003,
+        "freq_decay_factor": 0.02,
+        "freq_variability_factor": 0.0004
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          10.0
+        ],
+        "pw_fixed_std_us": 0.02,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          259.8356320908152
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 0.5,
+        "scan_start_angle": 197.4032841313938,
+        "beam_width_deg": 0.3
+      },
+      "power_config": {
+        "power_w": 1200.0,
+        "gain": 48.0
+      },
+      "position_config": {
+        "start_position_km": [
+          179.94368215781367,
+          157.29217709441036
+        ],
+        "travel_angle_deg": 245.0,
+        "speed_km_s": 29.349
+      }
+    },
+    {
+      "function": "transmitter_43",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          9410.0
+        ],
+        "freq_fixed_std_mhz": 0.005,
+        "freq_proporitional_variance_factor": 0.001,
+        "freq_decay_factor": 0.04,
+        "freq_variability_factor": 0.0015
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 3,
+        "pws_us": [
+          0.07,
+          0.3,
+          0.8
+        ],
+        "pw_fixed_std_us": 0.001,
+        "pw_proporitional_variance_factor": 0.03
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          1000.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 24.0,
+        "scan_start_angle": 65.99758829049843,
+        "beam_width_deg": 1.9
+      },
+      "power_config": {
+        "power_w": 25.0,
+        "gain": 28.0
+      },
+      "position_config": {
+        "start_position_km": [
+          120.32139322828361,
+          68.58577584298476
+        ],
+        "travel_angle_deg": 163.0,
+        "speed_km_s": 24.971
+      }
+    },
+    {
+      "function": "transmitter_59",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          2811.0099434408794
+        ],
+        "freq_fixed_std_mhz": 0.001,
+        "freq_proporitional_variance_factor": 0.0002,
+        "freq_decay_factor": 0.015,
+        "freq_variability_factor": 0.0003
+      },
+      "pulse_width_config": {
+        "pw_mode": "Seq-Fixed",
+        "pw_group_size": 2,
+        "pws_us": [
+          2.1491820878888324,
+          1.1454892656981803,
+          1.4253568462632054
+        ],
+        "pw_fixed_std_us": 0.002,
+        "pw_proporitional_variance_factor": 0.01
+      },
+      "pri_config": {
+        "pri_mode": "Staggered",
+        "pri_group_size": 4,
+        "pris_us": [
+          100.0,
+          120.0,
+          140.0,
+          160.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 12.0,
+        "scan_start_angle": 61.015035027866446,
+        "beam_width_deg": 1.0
+      },
+      "power_config": {
+        "power_w": 40000.0,
+        "gain": 43.0
+      },
+      "position_config": {
+        "start_position_km": [
+          51.165714568169676,
+          243.65737535865736
+        ],
+        "travel_angle_deg": 19.0,
+        "speed_km_s": 0.0
+      }
+    },
+    {
+      "function": "transmitter_55",
+      "frequency_config": {
+        "freq_mode": "FixedSingle",
+        "freq_grp_size": 1,
+        "freqs_mhz": [
+          22.264928021384225
+        ],
+        "freq_fixed_std_mhz": 0.1,
+        "freq_proporitional_variance_factor": 0.005,
+        "freq_decay_factor": 0.1,
+        "freq_variability_factor": 0.01
+      },
+      "pulse_width_config": {
+        "pw_mode": "Fixed",
+        "pw_group_size": 1,
+        "pws_us": [
+          300.0
+        ],
+        "pw_fixed_std_us": 1.0,
+        "pw_proporitional_variance_factor": 0.05
+      },
+      "pri_config": {
+        "pri_mode": "Fixed",
+        "pri_group_size": 1,
+        "pris_us": [
+          500.0
+        ]
+      },
+      "scan_config": {
+        "scan_type": "Circular",
+        "scan_rate_rpm": 0.1,
+        "scan_start_angle": 245.5033963758599,
+        "beam_width_deg": 3.0
+      },
+      "power_config": {
+        "power_w": 100000.0,
+        "gain": 25.0
+      },
+      "position_config": {
+        "start_position_km": [
+          104.55864077392272,
+          199.66781307221197
+        ],
+        "travel_angle_deg": 74.0,
+        "speed_km_s": 0.0
+      }
+    }
+  ],
+  "transmitters_note": "label in records: is the row INDEX into this list, local to this file only -- NOT a global/cross-file emitter id. Different files have different transmitter counts and contents.",
+  "receiver_status": "empty at source (no attrs/data present) -- not a parsing gap, the generator never populated these fields"
+}
