@@ -27,7 +27,7 @@ from __future__ import annotations
 import heapq
 import math
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from .config import SimConfig
 from .ingest import PulseRecord, RecordSource
@@ -51,6 +51,7 @@ class ActivePulse:
     aoa_deg: float
     emitter_id: int
     exit_us: float = field(repr=False)
+    source_id: str = ""
 
     @property
     def active_us(self) -> float:
@@ -67,6 +68,7 @@ class ActivePulse:
         d["pulse_id"] = self.pulse_id
         d["emitter_id"] = self.emitter_id
         d["exit_us"] = self.exit_us
+        d["source_id"] = self.source_id
         return d
 
 
@@ -121,10 +123,22 @@ class RadioEnvironment:
         self,
         source: RecordSource,
         config: Optional[SimConfig] = None,
-        on_event: Optional[Callable[[SimulationEvent], None]] = None,
+        on_event: Optional[
+            Union[Callable[[SimulationEvent], None],
+                  Sequence[Callable[[SimulationEvent], None]]]
+        ] = None,
     ):
         self.config = config or SimConfig()
-        self._callback = on_event
+        # Accept either a single callback or a list -- lets a caller attach
+        # both a TimelineWriter (for the on-disk log) and a live model/dataset
+        # consumer (e.g. an ML scheduler reacting to pulses in real time) to
+        # the same run without one having to wrap the other.
+        if on_event is None:
+            self._callbacks: List[Callable[[SimulationEvent], None]] = []
+        elif callable(on_event):
+            self._callbacks = [on_event]
+        else:
+            self._callbacks = list(on_event)
 
         # Streaming arrival state.
         self._arrivals = iter(source)
@@ -270,6 +284,7 @@ class RadioEnvironment:
             aoa_deg=rec.aoa_deg,
             emitter_id=rec.emitter_id,
             exit_us=exit_us,
+            source_id=rec.source_id,
         )
         self.active[self._pulse_seq] = ap
         heapq.heappush(self._exit_heap, (exit_us, self._exit_seq, self._pulse_seq))
@@ -287,9 +302,13 @@ class RadioEnvironment:
         self._on_event(event)
 
     def _on_event(self, event: SimulationEvent) -> None:
-        """Dispatch an event to the user-supplied callback, if any."""
-        if self._callback is not None:
-            self._callback(event)
+        """Dispatch an event to every user-supplied callback, in order."""
+        for cb in self._callbacks:
+            cb(event)
+
+    def add_callback(self, cb: Callable[[SimulationEvent], None]) -> None:
+        """Attach another event consumer after construction (e.g. a model)."""
+        self._callbacks.append(cb)
 
     # --------------------------------------------------------------- run-all
 
