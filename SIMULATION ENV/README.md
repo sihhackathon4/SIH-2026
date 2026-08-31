@@ -59,7 +59,7 @@ with the number of events — not with the 10.6 s time span.
 One self-describing JSON object per line (the first line is always `meta`):
 
 ```json
-{"event":"meta","schema_version":2,"data_validated":true,"feature_order":["toa_us","frequency_mhz","pulse_width_us","amplitude_db","aoa_deg"],"label":"emitter_id","aoa_range":[0.0,360.0],...}
+{"event":"meta","schema_version":1,"data_validated":true,"feature_order":["toa_us","frequency_mhz","pulse_width_us","amplitude_db","aoa_deg"],"label":"emitter_id","aoa_range":[0.0,360.0],...}
 
 {"event":"entry","time_us":2163460.0,"active_count":1,
  "pulse":{"toa_us":2163460.0,"frequency_mhz":9658.665,"pulse_width_us":0.0114,"amplitude_db":28.24,"aoa_deg":152.13,"pulse_id":0,"emitter_id":2,"exit_us":2163460.0114}}
