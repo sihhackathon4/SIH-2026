@@ -1,0 +1,9 @@
+# Python 3.9+
+#
+# The SIMULATION ENV package itself is standard-library only.
+# h5py is required only by the HDF5 -> output_*.txt transform
+# (TEST FILES/1_file_parser.py). numpy is optional for downstream
+# ML/analysis work (FeatureStats, window building).
+
+h5py>=3.8
+numpy>=1.24
