@@ -73,6 +73,7 @@ class ReceiverObservation:
     center_frequency_mhz: float = 0.0
     ibw_mhz: float = 0.0
     dwell_time_us: float = 0.0
+    dwell_interval_us: List[float] = field(default_factory=list)
     window_mhz: List[float] = field(default_factory=list)
     detections: List[DetectionObservation] = field(default_factory=list)
 
@@ -87,6 +88,7 @@ class ReceiverObservation:
             "center_frequency_mhz": self.center_frequency_mhz,
             "ibw_mhz": self.ibw_mhz,
             "dwell_time_us": self.dwell_time_us,
+            "dwell_interval_us": list(self.dwell_interval_us),
             "window_mhz": list(self.window_mhz),
             "detections": [d.to_dict() for d in self.detections],
         }

@@ -349,6 +349,10 @@ has *learned about* from the environment up to the current time:
 - A buffered pulse is observable during a dwell `[t0, t0 + dwell)` via **interval
   overlap**: `toa < t0 + dwell` **and** `exit > t0`. This correctly distinguishes
   pulses that begin/end during a dwell from those entirely before or after it.
+- The dwell interval is tracked explicitly on the receiver
+  (`dwell_start_us`, `dwell_end_us`) and exposed on every `ReceiverObservation`
+  as `dwell_interval_us = [start, end)`, so the receiver can always answer
+  *"which buffered pulses overlap my current dwell?"*.
 
 A first-class bridge connects the receiver to the live environment stream:
 
@@ -388,9 +392,9 @@ produce **no** detection (and never a fabricated zero-duration pulse).
 
 `get_observation()` returns the scheduler-facing observation space:
 ```json
-{"time_us": 100.0, "center_frequency_mhz": 8000.0,
- "frequency_window": [7500.0, 8500.0], "dwell_time_us": 100.0,
- "detections": [...]}
+{"time_us": 100.0, "center_frequency_mhz": 8000.0, "ibw_mhz": 1000.0,
+ "dwell_time_us": 100.0, "dwell_interval_us": [100.0, 200.0],
+ "window_mhz": [7500.0, 8500.0], "detections": [...]}
 ```
 
 ### Static scanning API

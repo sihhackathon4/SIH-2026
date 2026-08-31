@@ -52,17 +52,30 @@ class RadioReceiverBridge:
     # ------------------------------------------------------------------ events
 
     def on_event(self, event) -> None:
-        """Environment event callback (safe to pass straight to ``on_event``)."""
+        """Environment event callback (safe to pass straight to ``on_event``).
+
+        The environment and the receiver share one simulated clock. On every
+        event the bridge keeps the receiver's clock synced to the environment's
+        current simulated time, so the receiver is aware of what has *already*
+        happened. It never leaps forward to a future event on its own: it only
+        sees the current ``env`` time, which never exceeds what the environment
+        has already produced.
+        """
         if event is None:
             return
         if isinstance(event, dict):
             etype = event.get("event")
             pulse = event.get("pulse")
             pulse_id = event.get("pulse_id")
+            time_us = event.get("time_us")
         else:
             etype = getattr(event, "event_type", getattr(event, "event", None))
             pulse = getattr(event, "pulse", None)
             pulse_id = getattr(event, "pulse_id", None)
+            time_us = getattr(event, "time_us", None)
+        # Sync the receiver clock to the (already-produced) simulated time.
+        if time_us is not None and time_us > self.receiver.current_time_us:
+            self.receiver.advance(float(time_us))
         if etype == "entry":
             if pulse is not None:
                 self.receiver.add_pulse(pulse)

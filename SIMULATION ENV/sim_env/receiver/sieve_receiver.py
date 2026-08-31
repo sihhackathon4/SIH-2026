@@ -143,6 +143,9 @@ class SieveReceiver:
 
         self.center_frequency_mhz = 0.0
         self.current_time_us = 0.0
+        # Explicit dwell interval bookkeeping (half-open [start_us, end_us)).
+        self.dwell_start_us = 0.0
+        self.dwell_end_us = 0.0
 
         # Detections from the most recent dwell (cleared by reset()).
         self.detections: List[DetectionObservation] = []
@@ -204,6 +207,8 @@ class SieveReceiver:
         """Restore a deterministic initial state (no stale detections/scan state)."""
         self.center_frequency_mhz = self.legal_center_min_mhz
         self.current_time_us = 0.0
+        self.dwell_start_us = 0.0
+        self.dwell_end_us = 0.0
         self.detections = []
         self.last_observation = None
         self.scan_count = 0
@@ -540,6 +545,7 @@ class SieveReceiver:
             center_frequency_mhz=self.center_frequency_mhz,
             ibw_mhz=self.ibw_mhz,
             dwell_time_us=self.dwell_time_us,
+            dwell_interval_us=[self.dwell_start_us, self.dwell_end_us],
             window_mhz=list(self.get_frequency_window()),
             detections=list(detections),
         )
@@ -559,6 +565,8 @@ class SieveReceiver:
         """
         t0 = self.current_time_us
         t1 = t0 + self.dwell_time_us
+        self.dwell_start_us = t0
+        self.dwell_end_us = t1
         if pulses is None:
             candidates = self._current_pulses()
         else:

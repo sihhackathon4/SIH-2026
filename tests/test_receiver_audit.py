@@ -320,5 +320,138 @@ class TestNoFutureLeakage(unittest.TestCase):
         self.assertEqual(r.center_frequency_mhz, c_before + r.frequency_step_mhz)
 
 
+# ---------------------------------------------------------------------------
+# Pulse buffer state: entry adds, exit removes, reset clears, buffer correct.
+# ---------------------------------------------------------------------------
+class TestPulseBufferState(unittest.TestCase):
+    def test_entry_adds_and_exit_removes_pulse(self):
+        r = _rx()
+        r.add_pulse({"frequency_mhz": 3000.0, "toa_us": 100.0, "exit_us": 200.0,
+                     "pulse_width_us": 100.0, "amplitude_db": -120.0,
+                     "aoa_deg": 90.0, "pulse_id": 1, "emitter_id": 5})
+        self.assertIn(1, r._pulses)                 # entry -> buffer
+        r.remove_pulse(1)                            # exit -> removed
+        self.assertNotIn(1, r._pulses)
+
+    def test_active_buffer_reflects_lifetime(self):
+        r = _rx()
+        r.add_pulse({"frequency_mhz": 3000.0, "toa_us": 100.0, "exit_us": 200.0,
+                     "pulse_width_us": 100.0, "amplitude_db": -120.0,
+                     "aoa_deg": 90.0, "pulse_id": 1, "emitter_id": 5})
+        r.add_pulse({"frequency_mhz": 3100.0, "toa_us": 100.0, "exit_us": 400.0,
+                     "pulse_width_us": 300.0, "amplitude_db": -110.0,
+                     "aoa_deg": 90.0, "pulse_id": 2, "emitter_id": 6})
+        # Both active from toa 100; after advancing past pulse 1's exit it is gone.
+        r.advance(150.0)
+        self.assertEqual(set(r._pulses.keys()), {1, 2})
+        r.advance(250.0)                             # pulse 1 exit (200) passed
+        self.assertEqual(set(r._pulses.keys()), {2})
+
+    def test_reset_clears_pulse_state(self):
+        r = _rx()
+        self.assertEqual(len(r._pulses), 0)
+        r.add_pulse({"frequency_mhz": 3000.0, "toa_us": 100.0, "exit_us": 200.0,
+                     "pulse_width_us": 100.0, "amplitude_db": -120.0,
+                     "aoa_deg": 90.0, "pulse_id": 3, "emitter_id": 1})
+        self.assertEqual(len(r._pulses), 1)
+        r.reset()
+        self.assertEqual(len(r._pulses), 0)          # no stale pulses remain
+        self.assertEqual(r.dwell_start_us, 0.0)
+        self.assertEqual(r.dwell_end_us, 0.0)
+
+    def test_equal_toa_pulses_remain_separate(self):
+        r = _rx()
+        r.tune(3200.0)               # window [2700, 3700]
+        r.advance(100.0)
+        r.add_pulse({"frequency_mhz": 3200.0, "toa_us": 100.0, "exit_us": 130.0,
+                     "pulse_width_us": 30.0, "amplitude_db": -120.0,
+                     "aoa_deg": 90.0, "pulse_id": 1, "emitter_id": 1})
+        r.add_pulse({"frequency_mhz": 3300.0, "toa_us": 100.0, "exit_us": 130.0,
+                     "pulse_width_us": 30.0, "amplitude_db": -115.0,
+                     "aoa_deg": 90.0, "pulse_id": 2, "emitter_id": 2})
+        dets = r.scan_once().detections              # dwell [100, 200)
+        freqs = sorted(d.frequency_mhz for d in dets)
+        self.assertEqual(freqs, [3200.0, 3300.0])    # two separate observations
+
+    def test_observation_exposes_dwell_interval(self):
+        r = _rx()
+        r.advance(200.0)
+        obs = r.scan_once()
+        self.assertEqual(obs.dwell_interval_us, [200.0, 300.0])
+        self.assertIn("dwell_interval_us", obs.to_dict())
+        self.assertEqual(r.dwell_start_us, 200.0)
+        self.assertEqual(r.dwell_end_us, 300.0)
+
+
+# ---------------------------------------------------------------------------
+# CRITICAL end-to-end: validated data -> env -> event callback -> adapter ->
+# receiver buffer -> static scan -> observation. Detection depends only on what
+# the receiver can physically observe (no per-pulse retune, no clock jump to a
+# future pulse ToA). Frequencies are MHz, times are microseconds.
+# ---------------------------------------------------------------------------
+@unittest.skipUnless(VALIDATED_FILE.exists(), "validated output file not present")
+class TestCriticalEndToEnd(unittest.TestCase):
+    def _write_controlled_file(self):
+        import tempfile
+        lines = [
+            "record_1: data=[100.0, 3200.0, 30.0, -120.0, 90.0], label=1",
+            "record_2: data=[100.0, 3300.0, 30.0, -115.0, 90.0], label=2",
+            "record_3: data=[120.0, 3500.0, 30.0, -118.0, 90.0], label=3",
+            "record_4: data=[175.0, 9000.0, 30.0, -116.0, 90.0], label=4",
+            "record_5: data=[280.0, 3400.0, 30.0, -122.0, 90.0], label=5",
+        ]
+        d = Path(tempfile.mkdtemp())
+        f = d / "controlled.txt"
+        f.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return f
+
+    def test_environment_to_receiver_full_chain(self):
+        f = self._write_controlled_file()
+        # Broad IBW centred on the band, tuned ONCE (not per pulse); the step
+        # drags the window far away after the first dwell so only the pulses
+        # observable in that first dwell can ever be seen.
+        rx = SieveReceiver(total_bandwidth=18000.0, ibw=4000.0,
+                           frequency_step=100000.0, dwell_time=100.0,
+                           detection_threshold_db=-140.0)
+        rx.tune(3200.0)                 # one-time configuration
+        env = RadioEnvironment(
+            FileRecordSource([str(f)], on_nonfinite="drop"),
+            SimConfig(inputs=[str(f)], snapshot_interval_us=None))
+        attach_receiver(env, rx)
+
+        observations = []
+        max_buffer = 0
+        while not env.done:
+            env.step()                   # env drives the simulated clock
+            max_buffer = max(max_buffer, len(rx._pulses))
+            if len(rx._pulses) > 0:      # receiver dwells on its own schedule
+                observations.append(rx.scan_once())
+
+        # Live event path populated then drained the buffer (no stale state).
+        self.assertGreater(max_buffer, 0)
+        self.assertEqual(len(rx._pulses), 0)
+
+        # Only the first dwell overlaps the two simultaneous in-band pulses:
+        # P1/P2 (3200 & 3300, toa 100, active [100,130)) are BOTH detected and
+        # kept separate. P3 (3500) arrives just after the receiver's first
+        # dwell moved on; P4 (9000) is out of band; P5 (3400) falls in a window
+        # the receiver has already stepped away from.
+        det_freqs = []
+        for obs in observations:
+            det_freqs.extend(sorted(d.frequency_mhz for d in obs.detections))
+        self.assertEqual(det_freqs, [3200.0, 3300.0])
+
+        # Structured, deterministic ReceiverObservation with explicit dwell
+        # interval and frequency window is produced.
+        self.assertTrue(observations)
+        first = observations[0]
+        self.assertIsInstance(first, ReceiverObservation)
+        self.assertEqual(len(first.dwell_interval_us), 2)
+        self.assertEqual(len(first.window_mhz), 2)
+        # Ground-truth emitter ids are carried separately on detections.
+        self.assertEqual(sorted(d.emitter_id for d in first.detections),
+                         [1, 2])
+
+
 if __name__ == "__main__":
     unittest.main()
