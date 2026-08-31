@@ -1,0 +1,103 @@
+{
+  "total_records": 2052,
+  "valid_records": 2051,
+  "invalid_records": 1,
+  "duration_us": 8289876.0,
+  "first_valid_toa_us": 1190271.0,
+  "last_valid_toa_us": 9480147.0,
+  "issue_counts": {
+    "pw_not_positive": 1
+  },
+  "issues": [
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 1856918.875 preserved",
+      "record_number": 50,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 3834477.25 preserved",
+      "record_number": 830,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 3877177.25 preserved",
+      "record_number": 841,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 3877757.75 preserved",
+      "record_number": 844,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5898477.0 preserved",
+      "record_number": 1667,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5898477.0 preserved",
+      "record_number": 1668,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5898858.0 preserved",
+      "record_number": 1670,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5898858.0 preserved",
+      "record_number": 1671,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5899056.0 preserved",
+      "record_number": 1673,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5899276.5 preserved",
+      "record_number": 1675,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5899276.5 preserved",
+      "record_number": 1676,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5963318.0 preserved",
+      "record_number": 1684,
+      "fatal": false
+    },
+    {
+      "code": "pw_not_positive",
+      "message": "pulse_width -0.0009688688442111015 <= 0",
+      "record_number": 1704,
+      "fatal": true
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6168434.5 preserved",
+      "record_number": 1712,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6168450.5 preserved",
+      "record_number": 1719,
+      "fatal": false
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "total_records": 335,
+  "valid_records": 335,
+  "invalid_records": 0,
+  "duration_us": 6903275.375,
+  "first_valid_toa_us": 2068786.625,
+  "last_valid_toa_us": 8972062.0,
+  "issue_counts": {},
+  "issues": []
+}

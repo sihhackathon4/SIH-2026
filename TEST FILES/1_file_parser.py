@@ -48,6 +48,23 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
+import sys
+
+#---------------------------------------------------------------------------
+# Make the repository root importable.
+#
+# This file lives in:
+#     <repo_root>/TEST FILES/1_file_parser.py
+#
+# data_validation lives in:
+#     <repo_root>/data_validation/
+#
+# Therefore add <repo_root> to sys.path before importing data_validation.
+# ---------------------------------------------------------------------------
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 import h5py
 
@@ -61,7 +78,7 @@ except ImportError as exec:
    raise RuntimeError(
         "data_validation is required. "
         "Refusing to generate unvalidated output files."
-    ) from exc
+    ) from exec
 
 # ---------------------------------------------------------------------------
 # Configuration -- adjust these two paths to your layout.

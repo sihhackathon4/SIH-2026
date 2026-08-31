@@ -1,0 +1,683 @@
+{
+  "total_records": 33193,
+  "valid_records": 33193,
+  "invalid_records": 0,
+  "duration_us": 9246680.0625,
+  "first_valid_toa_us": 764546.9375,
+  "last_valid_toa_us": 10011227.0,
+  "issue_counts": {},
+  "issues": [
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 2163168.25 preserved",
+      "record_number": 3518,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 2456698.75 preserved",
+      "record_number": 4695,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 2565339.0 preserved",
+      "record_number": 5253,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 2823249.5 preserved",
+      "record_number": 6477,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 2948908.25 preserved",
+      "record_number": 6939,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 3361788.25 preserved",
+      "record_number": 8663,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 3486548.0 preserved",
+      "record_number": 9115,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 4070987.5 preserved",
+      "record_number": 11923,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 4070987.5 preserved",
+      "record_number": 11924,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 4092289.75 preserved",
+      "record_number": 12037,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 4092586.5 preserved",
+      "record_number": 12039,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 4092586.5 preserved",
+      "record_number": 12040,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5016499.0 preserved",
+      "record_number": 15661,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5060099.0 preserved",
+      "record_number": 15896,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5104469.0 preserved",
+      "record_number": 16128,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5188818.5 preserved",
+      "record_number": 16472,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5205629.0 preserved",
+      "record_number": 16529,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5211449.0 preserved",
+      "record_number": 16581,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5232488.5 preserved",
+      "record_number": 16683,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5253429.0 preserved",
+      "record_number": 16785,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5253529.0 preserved",
+      "record_number": 16789,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5254709.0 preserved",
+      "record_number": 16807,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5273159.0 preserved",
+      "record_number": 16894,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5273159.0 preserved",
+      "record_number": 16895,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5275268.5 preserved",
+      "record_number": 16913,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5276019.0 preserved",
+      "record_number": 16923,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5294929.0 preserved",
+      "record_number": 16997,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5294929.0 preserved",
+      "record_number": 16998,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5295969.0 preserved",
+      "record_number": 17004,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5295969.0 preserved",
+      "record_number": 17005,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5296399.0 preserved",
+      "record_number": 17013,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5296658.5 preserved",
+      "record_number": 17017,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5296829.0 preserved",
+      "record_number": 17019,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5296849.0 preserved",
+      "record_number": 17021,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5296869.0 preserved",
+      "record_number": 17023,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297019.0 preserved",
+      "record_number": 17027,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297059.0 preserved",
+      "record_number": 17029,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297119.0 preserved",
+      "record_number": 17032,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297149.0 preserved",
+      "record_number": 17035,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297149.0 preserved",
+      "record_number": 17036,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297269.0 preserved",
+      "record_number": 17040,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297289.0 preserved",
+      "record_number": 17042,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297319.0 preserved",
+      "record_number": 17045,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297649.0 preserved",
+      "record_number": 17056,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297679.0 preserved",
+      "record_number": 17058,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5297839.0 preserved",
+      "record_number": 17064,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316198.5 preserved",
+      "record_number": 17139,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316209.0 preserved",
+      "record_number": 17142,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316219.0 preserved",
+      "record_number": 17144,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316228.5 preserved",
+      "record_number": 17146,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316238.5 preserved",
+      "record_number": 17148,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316248.5 preserved",
+      "record_number": 17150,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316259.0 preserved",
+      "record_number": 17152,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316269.0 preserved",
+      "record_number": 17154,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5316269.0 preserved",
+      "record_number": 17155,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317529.0 preserved",
+      "record_number": 17167,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317529.0 preserved",
+      "record_number": 17168,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317539.0 preserved",
+      "record_number": 17171,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317549.0 preserved",
+      "record_number": 17174,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317758.5 preserved",
+      "record_number": 17178,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317758.5 preserved",
+      "record_number": 17179,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317769.0 preserved",
+      "record_number": 17181,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5317799.0 preserved",
+      "record_number": 17183,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318099.0 preserved",
+      "record_number": 17185,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318099.0 preserved",
+      "record_number": 17186,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318148.5 preserved",
+      "record_number": 17190,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318269.0 preserved",
+      "record_number": 17195,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318299.0 preserved",
+      "record_number": 17198,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318429.0 preserved",
+      "record_number": 17205,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318429.0 preserved",
+      "record_number": 17206,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318509.0 preserved",
+      "record_number": 17210,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5318988.5 preserved",
+      "record_number": 17216,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5319028.5 preserved",
+      "record_number": 17219,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5319319.0 preserved",
+      "record_number": 17225,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5334949.0 preserved",
+      "record_number": 17278,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5337929.0 preserved",
+      "record_number": 17300,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5337948.5 preserved",
+      "record_number": 17303,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5338029.0 preserved",
+      "record_number": 17305,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5338029.0 preserved",
+      "record_number": 17306,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5361199.0 preserved",
+      "record_number": 17420,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5384089.0 preserved",
+      "record_number": 17516,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5426569.0 preserved",
+      "record_number": 17671,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5426739.0 preserved",
+      "record_number": 17674,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5614358.5 preserved",
+      "record_number": 18448,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5682925.5 preserved",
+      "record_number": 18874,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5921048.5 preserved",
+      "record_number": 19907,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 5941486.5 preserved",
+      "record_number": 19994,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6026853.5 preserved",
+      "record_number": 20440,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6070387.0 preserved",
+      "record_number": 20715,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6070387.0 preserved",
+      "record_number": 20716,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6070708.0 preserved",
+      "record_number": 20719,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6071046.0 preserved",
+      "record_number": 20721,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6071046.0 preserved",
+      "record_number": 20722,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6113887.5 preserved",
+      "record_number": 20942,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6220561.5 preserved",
+      "record_number": 21379,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6285679.0 preserved",
+      "record_number": 21739,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6349833.5 preserved",
+      "record_number": 22022,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6392616.5 preserved",
+      "record_number": 22202,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6650788.5 preserved",
+      "record_number": 23233,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6887376.5 preserved",
+      "record_number": 24139,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 6951578.5 preserved",
+      "record_number": 24409,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 7064187.0 preserved",
+      "record_number": 25040,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 7231242.0 preserved",
+      "record_number": 26019,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 7855427.5 preserved",
+      "record_number": 28333,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 7855427.5 preserved",
+      "record_number": 28334,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 7877126.0 preserved",
+      "record_number": 28398,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 8028209.5 preserved",
+      "record_number": 28764,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 8048849.5 preserved",
+      "record_number": 28841,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 8048849.5 preserved",
+      "record_number": 28842,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 8049787.5 preserved",
+      "record_number": 28851,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 8107926.5 preserved",
+      "record_number": 29120,
+      "fatal": false
+    },
+    {
+      "code": "duplicate_toa",
+      "message": "duplicate toa 9876727.0 preserved",
+      "record_number": 33105,
+      "fatal": false
+    }
+  ]
+}
