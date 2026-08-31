@@ -230,6 +230,165 @@ rejected (never turned into zero-duration pulses).
 
 ---
 
+## Receiver Component (`sim_env/receiver/`)
+
+The environment describes the **RF world** (the full event timeline). The
+**`SieveReceiver`** describes what a *limited-bandwidth* receiver can actually
+intercept. It sits between the environment and a future ML scheduler:
+
+```
+VALIDATED RF DATA
+      |
+      v
+RadioEnvironment
+      |
+   RF events (existing NDJSON schema v2, unchanged)
+      |
+      v
++----------------+
+| SieveReceiver  |   IBW  *  TIME  *  DETECTION
++----------------+
+      |
+      v
+Receiver Observation   (future ML scheduler's observation space)
+      |
+      v
+FUTURE ML SCHEDULER -- NOT IMPLEMENTED in this phase
+```
+
+### Architectural note
+The **ML scheduler is NOT implemented in this phase.** The receiver uses a
+**static, deterministic interception/scanning policy**. It is designed so a
+future scheduler can replace *only* the static control policy
+(via `get_observation()` / `apply_action()`) without rewriting the receiver.
+
+- `RadioEnvironment` = RF world / event timeline (unchanged).
+- `SieveReceiver` = receiver limitations and observations.
+- `ReceiverObservation` = what the receiver can observe (the scheduler's future
+  observation space) — not every RF event is exposed, only what is observable.
+
+### Units
+All receiver frequencies are **MHz internally** (matching the repository's
+`frequency_mhz`); all times are **microseconds**. Helpers `to_hz()` / `to_ghz()`
+provide explicit conversion only where required — the receiver never silently
+treats `3199.19 MHz` as `3199.19 Hz`.
+
+- `total_bandwidth_mhz` — full available spectrum (e.g. `18e3` MHz = 18 GHz)
+- `ibw_mhz` — instantaneous bandwidth of the observation window
+- `frequency_step_mhz` — step size for scanning
+- `dwell_time_us` — observation interval
+- `center_frequency_mhz` — current tuned center
+- `current_time_us` — receiver simulation clock
+
+### Configuration validation
+Invalid configuration is rejected at construction with a clear `ValueError`
+(`ReceiverConfigError`), never silently repaired:
+
+```
+total_bandwidth > 0        ibw > 0            ibw <= total_bandwidth
+frequency_step > 0         dwell_time > 0     finite, sane thresholds
+```
+
+### Frequency window / ICC rule
+`get_frequency_window()` returns `(center - ibw/2, center + ibw/2)`. The window
+is **inclusive at both edges** (`lower <= f <= upper`) consistently across
+synthetic-spectrum mode, pulse/event mode, and tests.
+
+- Legal center range is `[ibw/2, total_bandwidth - ibw/2]`; tuning/stepping is
+  clamped to this range so the window never exceeds the total spectrum.
+- `tune(f)` clips (does not raise) and raises on non-finite input.
+- `step_up()` / `step_down()` move by `frequency_step` with legal-band clipping
+  and set the scan direction.
+
+### Time model / dwell
+`dwell()` advances `current_time_us` by `dwell_time_us`. `perform_dwell(...)`
+observes the window and then advances time. Time matters for visibility: a pulse
+that ended before observation is **not** detected; a pulse active during the
+dwell is; pulses beginning or ending during a dwell are handled via the exact
+half-open overlap rule `toa_us <= current_time_us < exit_us`.
+
+### Detection model
+The repository's amplitude convention is **relative dB** and *non-positive*
+(e.g. `-121.8`). The original prototype's `peak >= detection_threshold` (with a
+positive `5.0`) is therefore **incompatible** with real data. The receiver uses
+two separate, documented mechanisms:
+
+1. **`detection_threshold_db` (sensitivity floor, dB)** — used for real RF
+   pulse data. A pulse's amplitude is observed when
+   `amplitude_db >= detection_threshold_db`. Real weak signals (≈ `-100` to
+   `-120` dB) clear a `-140` dB floor.
+2. **`spectrum_threshold` (positive normalized power)** — used *only* for the
+   synthetic NumPy-spectrum path, preserving the prototype's
+   `peak_power >= threshold` behavior for unit tests.
+
+No physical dB↔power conversion is fabricated; the model is deliberately simple
+and deterministic.
+
+### Visibility & detection
+A pulse is detected only when **all** of the following hold (see §14):
+
+```
+frequency inside current window (inclusive edges)
+AND current_time inside [toa, toa + pw)   (half-open time overlap)
+AND amplitude_db >= detection_threshold_db
+```
+
+`process_pulse(pulse)` / `process_event(event)` accept the repository's actual
+pulse representation (a dict from NDJSON, or an `ActivePulse` / `PulseRecord`
+object). They return a structured `DetectionObservation` on detection, else
+`None`, and never advance time or change frequency. Multiple simultaneous pulses
+with equal ToA remain **separate** observations — never merged.
+
+### Defensive input handling
+The receiver defensively rejects impossible input rather than silently repairing
+it: `NaN`/`Inf` frequency, `NaN`/`Inf` PW, `PW <= 0`, `NaN` ToA, and negative ToA
+produce **no** detection (and never a fabricated zero-duration pulse).
+
+### Structured output
+
+`DetectionObservation` (per-pulse, receiver-observable fields; `pulse_id` and
+`emitter_id` are passthrough ground-truth, **not** receiver measurements):
+```json
+{"detected": true, "time_us": 2068786.625, "frequency_mhz": 3199.19,
+ "pulse_width_us": 0.49, "amplitude_db": -121.81, "aoa_deg": 84.26,
+ "pulse_id": 0, "center_frequency_mhz": 3199.19, "emitter_id": null}
+```
+
+`get_observation()` returns the scheduler-facing observation space:
+```json
+{"time_us": 100.0, "center_frequency_mhz": 8000.0,
+ "frequency_window": [7500.0, 8500.0], "dwell_time_us": 100.0,
+ "detections": [...]}
+```
+
+### Static scanning API
+`scan_once(...)` runs one deterministic cycle —
+`observe → detect → record → dwell → step` — with no hidden state; `scan(n)`
+repeats it. `reset()` clears all state (time, center, detections, scan
+position) so no state leaks between runs. The scan sequence is deterministic.
+
+### Future ML scheduler interface
+The receiver already exposes the operations a future scheduler will drive, but
+is fully usable without any scheduler classes:
+```
+observation = receiver.get_observation()     # scheduler reads this
+action = scheduler.choose_action(observation)  # NOT implemented yet
+receiver.apply_action(action)                  # TUNE / STEP_UP / STEP_DOWN / DWELL
+```
+`apply_action` accepts `"TUNE"` (also `"STEP_UP"`, `"STEP_DOWN"`, `"DWELL"`)
+or a set of target state, raising `ValueError` on unknown actions. Because the
+control loop is a thin, exposed seam, the static policy can later be swapped for
+an ML policy without touching the receiver internals.
+
+### Receiver files
+| File                                   | Responsibility                                    |
+|----------------------------------------|---------------------------------------------------|
+| `sim_env/receiver/models.py`           | `DetectionObservation`, `ReceiverObservation`     |
+| `sim_env/receiver/sieve_receiver.py`   | `SieveReceiver`, `ReceiverConfigError`, `to_hz`/`to_ghz` |
+| `sim_env/receiver/__init__.py`         | Public receiver API re-exports                    |
+
+---
+
 ## Files
 
 | File                    | Responsibility                                    |
@@ -243,6 +402,7 @@ rejected (never turned into zero-duration pulses).
 | `sim_env/dataset.py`    | Windowed pulse-sequence dataset + live collector |
 | `sim_env/cli.py`        | Command-line entry point                          |
 | `run.py`                | Convenience launcher                              |
+| `sim_env/receiver/*`    | Receiver component (see Receiver section above)   |
 
 ---
 

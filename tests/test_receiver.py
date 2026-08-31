@@ -343,5 +343,86 @@ class TestActionAPI(unittest.TestCase):
             r.apply_action("FLY")
 
 
+class TestSyntheticDemonstration(unittest.TestCase):
+    """Mirrors the classic 'Test_Environment.py' demonstration: an 18 GHz
+    spectrum with 3 artificial signals, receiver tuned to 8 GHz with a 1 GHz
+    IBW, but with hard assertions (not just a plot)."""
+
+    def _make_environment(self):
+        rng = np.random.default_rng(42)
+        n = 18001
+        freqs = np.linspace(0, 18e3, n)  # 0..18 GHz in MHz
+        spectrum = 0.1 * rng.standard_normal(n)
+        # 3 deterministic artificial signals within the 8 GHz observation band.
+        for center in (7900.0, 8000.0, 8100.0):
+            idx = int(np.argmin(np.abs(freqs - center)))
+            spectrum[idx] = 12.0
+        return rng, freqs, spectrum
+
+    def test_18ghz_demo_tuning_window_detection(self):
+        rng, freqs, spectrum = self._make_environment()
+        r = SieveReceiver(**RX_KW)          # 18 GHz total, 1 GHz IBW
+        r.tune(8000.0)                       # tune to 8 GHz
+        lower, upper = r.get_frequency_window()
+        self.assertEqual(lower, 7500.0)
+        self.assertEqual(upper, 8500.0)      # exactly 1 GHz IBW
+
+        observed_freqs, observed_spec = r.observe(spectrum, freqs)
+        # Only in-band frequencies survive the IBW window.
+        self.assertTrue(np.all(observed_freqs >= 7500.0 - 1e-6))
+        self.assertTrue(np.all(observed_freqs <= 8500.0 + 1e-6))
+        self.assertTrue(r.detect(observed_spec))   # signals are above threshold
+
+    def test_18ghz_demo_no_detection_outside_ibw(self):
+        rng, freqs, spectrum = self._make_environment()
+        r = SieveReceiver(**RX_KW)
+        r.tune(5000.0)                        # 5 GHz, away from the 8 GHz signals
+        observed_freqs, observed_spec = r.observe(spectrum, freqs)
+        # Tuned window (4500..5500 MHz) contains no strong signal.
+        self.assertFalse(r.detect(observed_spec))
+
+    def test_18ghz_demo_dwell_timing(self):
+        rng, freqs, spectrum = self._make_environment()
+        r = SieveReceiver(**RX_KW)             # dwell_time=100 us from RX_KW
+        r.tune(8000.0)
+        self.assertEqual(r.current_time_us, 0.0)
+        r.perform_dwell(spectrum, freqs)
+        self.assertEqual(r.current_time_us, 100.0)
+
+
+class TestDefensiveInput(unittest.TestCase):
+    def _rx(self, t_us=100):
+        r = SieveReceiver(**RX_KW)
+        r.tune(8000.0)
+        r.current_time_us = t_us
+        return r
+
+    def test_nan_frequency_not_detected(self):
+        r = self._rx()
+        self.assertIsNone(r.process_pulse(pulse(float("nan"), 100, 50)))
+
+    def test_inf_frequency_not_detected(self):
+        r = self._rx()
+        self.assertIsNone(r.process_pulse(pulse(float("inf"), 100, 50)))
+
+    def test_nan_width_not_detected(self):
+        r = self._rx()
+        self.assertIsNone(r.process_pulse(pulse(8000, 100, float("nan"))))
+
+    def test_nonpositive_width_not_detected(self):
+        r = self._rx()
+        self.assertIsNone(r.process_pulse(pulse(8000, 100, 0.0)))
+        self.assertIsNone(r.process_pulse(pulse(8000, 100, -5.0)))
+
+    def test_nan_toa_not_detected(self):
+        r = self._rx()
+        self.assertIsNone(r.process_pulse(pulse(8000, float("nan"), 50)))
+
+    def test_negative_toa_not_detected(self):
+        r = self._rx()
+        # pulse ended long before receiver time 100 -> not visible
+        self.assertIsNone(r.process_pulse(pulse(8000, -50.0, 10.0)))
+
+
 if __name__ == "__main__":
     unittest.main()
