@@ -56,7 +56,7 @@ class PulseRecord:
 
 
 def parse_record_line(
-    line: str, source_id: str = "", allow_nonfinite: bool = True, on_nonfinite: str = "allow"
+    line: str, source_id: str = "", allow_nonfinite: bool = True, on_nonfinite: str = "drop"
 ) -> Optional[PulseRecord]:
     """Parse a single ``record_N: ...`` line.
 
@@ -69,23 +69,22 @@ def parse_record_line(
 
     ``allow_nonfinite`` is kept for backward compatibility: ``False`` is
     equivalent to ``on_nonfinite="raise"``. New code should prefer
-    ``on_nonfinite``, a policy over ``inf``/``nan`` in ``frequency_mhz`` /
-    ``amplitude_db`` / ``aoa_deg`` (NOT ``pulse_width_us``, which is handled
-    downstream in ``RadioEnvironment``):
+    ``on_nonfinite``, a policy over ``inf``/``nan``/``PW <= 0`` in the record:
 
-    * ``"allow"`` (default) -- preserve the non-finite value unchanged.
-    * ``"drop"`` -- return ``None`` for the offending record so the caller can
-      skip it and keep building the stream.
+    * ``"drop"`` (default) -- return ``None`` for the offending record so the
+      caller can skip it and keep building the stream. Invalid data is **not**
+      silently passed on.
     * ``"raise"`` -- raise ``ValueError`` so corruption is surfaced instead of
       silently polluting downstream statistics.
+    * ``"allow"`` -- preserve the non-finite value unchanged (legacy; the
+      validation layer makes this unnecessary for normal pipelines).
 
-    A real, sizeable slice of the source corpus can contain literal ``inf`` /
-    ``nan`` values in these fields, so the choice matters most when building an
-    ML dataset, where a single bad feature would corrupt every statistic and
-    gradient computed from it.
+    Invalid ``pulse_width_us`` (``<= 0`` or non-finite) is rejected under every
+    policy except ``"allow"``: a pulse must have a positive, finite width. The
+    environment never turns such a record into a zero-duration pulse.
     """
     if allow_nonfinite is False and on_nonfinite == "allow":
-        on_nonfinite = "raise"
+        on_nonfinite = "drop"
     m = _RECORD_RE.search(line)
     if m is None:
         return None
@@ -98,11 +97,18 @@ def parse_record_line(
         if on_nonfinite != "allow":
             import math
 
-            for name, v in (("frequency_mhz", freq), ("amplitude_db", amp), ("aoa_deg", aoa)):
+            for name, v in (("frequency_mhz", freq), ("amplitude_db", amp),
+                            ("aoa_deg", aoa), ("pulse_width_us", pw),
+                            ("toa_us", toa)):
                 if not math.isfinite(v):
                     if on_nonfinite == "raise":
                         raise ValueError(f"non-finite {name}={v!r}")
                     return None  # "drop"
+            # Invalid PW must never become a zero-duration pulse: reject it.
+            if pw <= 0.0:
+                if on_nonfinite == "raise":
+                    raise ValueError(f"invalid pulse_width_us={pw!r} (must be > 0)")
+                return None  # "drop"
     except ValueError as exc:
         raise ValueError(f"malformed record line: {line!r} ({exc})") from exc
     return PulseRecord(
@@ -118,7 +124,7 @@ def parse_record_line(
 
 
 def _iter_records(
-    path: Path, allow_nonfinite: bool = True, on_nonfinite: str = "allow"
+    path: Path, allow_nonfinite: bool = True, on_nonfinite: str = "drop"
 ) -> Iterator[PulseRecord]:
     """Yield every record from one file, in file order (assumed sorted by ToA)."""
     source_id = path.stem  # e.g. "output_0" -- stable, human-readable episode tag
@@ -163,7 +169,7 @@ class FileRecordSource:
         paths: Sequence[Union[str, Path]],
         resolver: Optional[_Resolver] = None,
         allow_nonfinite: bool = True,
-        on_nonfinite: str = "allow",
+        on_nonfinite: str = "drop",
     ):
         self._paths = list(paths)
         self._resolver = resolver or _DefaultResolver()

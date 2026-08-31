@@ -68,10 +68,46 @@ def _build_parser() -> argparse.ArgumentParser:
              "instantaneous. Default: 0.0",
     )
     p.add_argument(
-        "--nonfinite", choices=["allow", "drop", "raise"], default="allow",
-        help="How to treat inf/nan in frequency/amplitude/aoa. 'allow' keeps "
-             "them (default, for simulation); 'drop' skips the record; "
-             "'raise' fails loudly. For ML dataset building prefer --drop.",
+        "--nonfinite", choices=["allow", "drop", "raise"], default="drop",
+        help="How to treat inf/nan in frequency/amplitude/aoa (and PW<=0). "
+             "'drop' skips such records (default); 'raise' fails loudly; "
+             "'allow' keeps them (legacy). For ML dataset building prefer "
+             "--drop.",
+    )
+    p.add_argument(
+        "--min-frequency-mhz", type=float, default=0.0,
+        help="Records with frequency <= this are rejected. Default: 0.0 "
+             "(strictly positive frequency).",
+    )
+    p.add_argument(
+        "--max-frequency-mhz", type=float, default=None,
+        help="Records with frequency > this are rejected. Default: None (no "
+             "invented upper limit).",
+    )
+    p.add_argument(
+        "--min-aoa-deg", type=float, default=0.0,
+        help="Lower bound of canonical AoA range. Default: 0.0.",
+    )
+    p.add_argument(
+        "--max-aoa-deg", type=float, default=360.0,
+        help="Upper bound (exclusive) of canonical AoA range. Default: 360.0.",
+    )
+    p.add_argument(
+        "--no-normalize-aoa", action="store_true",
+        help="Do not fold signed AoA into [0, 360).",
+    )
+    p.add_argument(
+        "--reject-duplicate-timestamps", action="store_true",
+        help="Reject records whose ToA equals the previous record's ToA. "
+             "Default: keep equal timestamps (separate observations).",
+    )
+    p.add_argument(
+        "--min-duration-us", type=float, default=0.0,
+        help="Minimum episode duration to enforce (reported). Default: 0.0.",
+    )
+    p.add_argument(
+        "--max-duration-us", type=float, default=None,
+        help="Maximum episode duration to enforce (reported). Default: None.",
     )
     p.add_argument(
         "--count-records", action="store_true",
@@ -100,6 +136,14 @@ def main(argv: Optional[list] = None) -> int:
         snapshot_interval_us=ns.snapshot_interval_us,
         min_pw_us=ns.min_pw_us,
         nonfinite=ns.nonfinite,
+        min_frequency_mhz=ns.min_frequency_mhz,
+        max_frequency_mhz=ns.max_frequency_mhz,
+        min_aoa_deg=ns.min_aoa_deg,
+        max_aoa_deg=ns.max_aoa_deg,
+        normalize_signed_aoa=not ns.no_normalize_aoa,
+        reject_duplicate_timestamps=ns.reject_duplicate_timestamps,
+        min_duration_us=ns.min_duration_us,
+        max_duration_us=ns.max_duration_us,
         emit_entries=not ns.no_entries,
         emit_exits=not ns.no_exits,
         emit_snapshots=not ns.no_snapshots,

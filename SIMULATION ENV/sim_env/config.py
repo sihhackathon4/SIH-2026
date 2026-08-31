@@ -53,10 +53,10 @@ class SimConfig:
             If ``None`` the header is written as the first line of the event
             log itself.
         min_pw_us:
-            Records whose pulse width is below this value (or negative /
-            non-finite) are treated as having an *instantaneous* presence at
-            their ToA and expire immediately (effective PW clamped to 0). This
-            guards against the occasional non-physical PW in the source data.
+            Reserved for backward compatibility. Records whose pulse width is
+            below this value are **rejected at ingestion** (never turned into
+            zero-duration pulses). The validation layer removes ``PW <= 0``
+            records upstream so this is normally already clean.
         pulse_cache_size:
             If a pulse id is reused across records (not present in this source
             data, where each record is a distinct pulse), this memory cap keeps
@@ -73,23 +73,19 @@ class SimConfig:
             data-order independent.
         nonfinite:
             How to treat records whose ``frequency_mhz`` / ``amplitude_db`` /
-            ``aoa_deg`` values are ``inf`` / ``nan`` (a real occurrence in this
-            corpus). One of:
+            ``aoa_deg`` values are ``inf`` / ``nan`` (a real occurrence in the
+            legacy corpus). One of:
 
-            * ``"allow"`` (default) -- pass non-finite values through untouched.
-              Right for the *simulation* environment, where every pulse is a
-              real emission to be modelled regardless of a bad feature value.
-            * ``"drop"`` -- skip the offending record entirely but keep building
-              the stream/window set. Right for building an ML dataset, where a
-              single bad feature would corrupt every statistic and gradient
-              computed from it.
-            * ``"raise"`` -- fail loudly on the first non-finite record, so you
-              consciously decide how to handle it rather than silently training
-              on corruption.
+            * ``"drop"`` (default) -- skip the offending record entirely but
+              keep building the stream/window set. Invalid non-finite data is
+              **not** silently passed into the environment.
+            * ``"raise"`` -- fail loudly on the first non-finite record.
+            * ``"allow"`` -- pass non-finite values through untouched (legacy
+              behaviour; not recommended now that the validation layer is the
+              upstream gate).
 
-            Non-finite ``pulse_width_us`` is handled separately and always
-            treated as *instantaneous* by the environment, independent of this
-            policy.
+            Non-finite ``pulse_width_us`` records are always rejected here,
+            independent of this policy.
     """
 
     inputs: Sequence[Union[str, Path]] = field(default_factory=list)
@@ -102,7 +98,17 @@ class SimConfig:
     emit_exits: bool = True
     emit_snapshots: bool = True
     fields: tuple = (TOA_US, FREQ_MHZ, PW_US, AMP_DB, AOA_DEG)
-    nonfinite: str = "allow"
+    nonfinite: str = "drop"
+
+    # --- RF validation rules (upstream gate; authoritative in data_validation)
+    min_frequency_mhz: float = 0.0
+    max_frequency_mhz: Optional[float] = None
+    min_aoa_deg: float = 0.0
+    max_aoa_deg: float = 360.0
+    normalize_signed_aoa: bool = True
+    reject_duplicate_timestamps: bool = False
+    min_duration_us: float = 0.0
+    max_duration_us: Optional[float] = None
 
     def __post_init__(self) -> None:
         if isinstance(self.inputs, (str, Path)):

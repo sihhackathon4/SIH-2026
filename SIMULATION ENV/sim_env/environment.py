@@ -195,13 +195,9 @@ class RadioEnvironment:
         except StopIteration:
             self._pending = None
 
-    def _effective_exit(self, rec: PulseRecord) -> float:
-        pw = rec.pulse_width_us
-        if not math.isfinite(pw) or pw < self.config.min_pw_us:
-            pw = 0.0
-        return rec.toa_us + pw
-
-    # --------------------------------------------------------------- stepping
+    def add_callback(self, cb: Callable[[SimulationEvent], None]) -> None:
+        """Attach another event consumer after construction (e.g. a model)."""
+        self._callbacks.append(cb)
 
     def step(self) -> Optional[SimulationEvent]:
         """Advance the clock to the next event and process it.
@@ -274,14 +270,25 @@ class RadioEnvironment:
     # ------------------------------------------------------------- internals
 
     def _add_pulse(self, rec: PulseRecord) -> None:
-        exit_us = self._effective_exit(rec)
+        # A pulse is active for exactly its pulse width: it enters at its ToA
+        # and disappears at ToA + PW. Invalid (<=0 / non-finite) widths are
+        # already rejected upstream by the validation layer / ingest, so no
+        # record is ever turned into a fake zero-duration pulse here.
+        exit_us = rec.toa_us + rec.pulse_width_us
+        # Defense-in-depth: emit canonical AoA in [0, 360) even if a raw file
+        # was fed directly to the source (the validation layer normally folds
+        # signed angles already).
+        aoa = rec.aoa_deg
+        if aoa < self.config.min_aoa_deg or aoa >= self.config.max_aoa_deg:
+            span = self.config.max_aoa_deg - self.config.min_aoa_deg
+            aoa = ((aoa - self.config.min_aoa_deg) % span) + self.config.min_aoa_deg
         ap = ActivePulse(
             pulse_id=self._pulse_seq,
             toa_us=rec.toa_us,
             frequency_mhz=rec.frequency_mhz,
             pulse_width_us=rec.pulse_width_us,
             amplitude_db=rec.amplitude_db,
-            aoa_deg=rec.aoa_deg,
+            aoa_deg=aoa,
             emitter_id=rec.emitter_id,
             exit_us=exit_us,
             source_id=rec.source_id,

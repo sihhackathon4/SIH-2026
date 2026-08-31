@@ -51,6 +51,15 @@ from pathlib import Path
 
 import h5py
 
+# The RF validation gate: rejects dirty records (NaN/Inf, PW<=0, ToA<0,
+# decreasing ToA, freq<=0, invalid emitter) and normalizes signed AoA BEFORE
+# they are written to output_*.txt. It lives at the repo root.
+try:
+    from data_validation import RecordValidator, ValidationConfig
+    _VALIDATION_AVAILABLE = True
+except ImportError:  # pragma: no cover - fallback kept for standalone usage
+    _VALIDATION_AVAILABLE = False
+
 # ---------------------------------------------------------------------------
 # Configuration -- adjust these two paths to your layout.
 # ---------------------------------------------------------------------------
@@ -147,22 +156,62 @@ def parse_one_file(h5_path: Path, output_dir: Path) -> None:
             data = data.copy()
             data[:, [3, 4]] = data[:, [4, 3]]
 
+        # --- RF VALIDATION GATE (primary boundary) ---------------------------
+        # Map the swapped rows into the semantic 5-feature vector in written
+        # order [toa, freq, pw, amp, aoa], validate each, normalize AoA, and
+        # discard invalid records. Only validated rows are written.
+        validator = RecordValidator(ValidationConfig()) if _VALIDATION_AVAILABLE else None
+        clean_rows: list = []       # list of (data_vector[5], label)
+        original_indices: list = []  # source row index (1-based) of each kept row
+
+        if validator is not None:
+            for row_number, (row, label) in enumerate(list(zip(data, labels.ravel())), start=1):
+                vals = [float(x) for x in row]
+                try:
+                    emitter = int(label)
+                except (TypeError, ValueError):
+                    emitter = label
+                clean = validator.validate(vals, emitter, row_number)
+                if clean is not None:
+                    clean_rows.append((
+                        [clean["toa_us"], clean["frequency_mhz"],
+                         clean["pulse_width_us"], clean["amplitude_db"],
+                         clean["aoa_deg"]],
+                        clean["emitter_id"],
+                    ))
+                    original_indices.append(row_number)
+        else:
+            # Degenerate fallback (validation not importable): keep raw rows.
+            for row, label in zip(data, labels.ravel()):
+                clean_rows.append(([float(x) for x in row], int(label)))
+
         output_lines = []
         output_lines.append("dataset_names: " + ", ".join(file.keys()))
-        output_lines.append(f"data_shape: {data.shape}")
+        output_lines.append(f"data_shape: ({len(clean_rows)}, 5)")
         output_lines.append(f"data_dtype: {data.dtype}")
-        output_lines.append(f"labels_shape: {labels.shape}")
+        output_lines.append(f"labels_shape: ({len(clean_rows)}, 1)")
         output_lines.append(f"labels_dtype: {labels.dtype}")
-        output_lines.append(f"record_count: {len(data)}")
+        output_lines.append(f"record_count: {len(clean_rows)}")
         output_lines.append("records:")
 
-        for row_number, (row, label) in enumerate(zip(data, labels.ravel()), start=1):
+        # Renumber contiguously -- never leave holes (record_1, record_2, ...).
+        for new_number, ((row_values, label), orig_idx) in enumerate(
+            zip(clean_rows, original_indices or [None] * len(clean_rows)), start=1
+        ):
             output_lines.append(
-                f"record_{row_number}: data={row.tolist()}, label={int(label)}"
+                f"record_{new_number}: data={row_values}, label={label}"
             )
 
         output_dir.mkdir(parents=True, exist_ok=True)
         output_path.write_text("\n".join(output_lines) + "\n", encoding="utf-8")
+
+        # Validation report for this episode, kept separate from sim input.
+        if validator is not None:
+            report_path = output_dir / f"{output_path.stem}.validation.json"
+            report_path.write_text(
+                json.dumps(validator.summary.to_report(), indent=2),
+                encoding="utf-8",
+            )
 
         # Sidecar metadata -- kept separate so the record-line format ingest.py
         # parses via regex never changes.

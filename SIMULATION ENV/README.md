@@ -59,10 +59,10 @@ with the number of events — not with the 10.6 s time span.
 One self-describing JSON object per line (the first line is always `meta`):
 
 ```json
-{"event":"meta","schema_version":1,"feature_order":["toa_us","frequency_mhz","pulse_width_us","amplitude_db","aoa_deg"],"time_unit":"microseconds",...}
+{"event":"meta","schema_version":2,"data_validated":true,"feature_order":["toa_us","frequency_mhz","pulse_width_us","amplitude_db","aoa_deg"],"label":"emitter_id","aoa_range":[0.0,360.0],...}
 
 {"event":"entry","time_us":2163460.0,"active_count":1,
- "pulse":{"toa_us":2163460.0,"frequency_mhz":9658.665,"pulse_width_us":0.0114,"amplitude_db":28.24,"aoa_deg":-152.13,"pulse_id":0,"emitter_id":2,"exit_us":2163460.0114}}
+ "pulse":{"toa_us":2163460.0,"frequency_mhz":9658.665,"pulse_width_us":0.0114,"amplitude_db":28.24,"aoa_deg":152.13,"pulse_id":0,"emitter_id":2,"exit_us":2163460.0114}}
 
 {"event":"snapshot","time_us":2163460.0,"active_count":2,
  "active_pulses":[ ...every pulse alive at that instant... ]}
@@ -74,7 +74,7 @@ Event types:
 
 | `event`     | Description                                                               |
 |-------------|---------------------------------------------------------------------------|
-| `meta`      | Schema version, feature order/units, config.                              |
+| `meta`      | Schema version (2), `data_validated`, feature order/units, `aoa_range`, config. |
 | `entry`     | A pulse **entered** at `time_us`; embeds the full feature vector + `emitter_id`. |
 | `exit`      | A pulse **left entirely** at `time_us`; embeds the same fields.            |
 | `snapshot`  | Periodic ground-truth frame: **all** pulses active at `time_us`.           |
@@ -84,6 +84,55 @@ by line / over a pipe, in time order, without buffering, and can train on either
 the fine-grained `entry`/`exit` events or the dense `snapshot` frames.
 
 ---
+
+## Validated RF data pipeline
+
+Dirty records are removed **before** the simulation environment (the validation
+boundary is upstream, not the NDJSON writer/reader).
+
+```
+HDF5 → transform → DATA VALIDATION → output_*.txt → FileRecordSource
+      → RadioEnvironment → TimelineWriter → NDJSON → ML scheduler / dataset
+```
+
+Validation rejects (never silently repairs):
+
+* missing fields / wrong record width / unparsable numerics;
+* NaN, +Inf, -Inf in any field (incl. emitter id);
+* `ToA < 0` and decreasing ToA (input must be monotonically non-decreasing);
+* `PW <= 0` (never turned into a zero-duration pulse);
+* `Frequency <= 0` (no invented maximum by default);
+* invalid emitter id (must float-parse to an integer `>= 0`).
+
+It **normalizes** signed AoA into `[0, 360)` (`-10 -> 350`, `360 -> 0`) and
+**preserves** equal timestamps by default (legitimate simultaneous emitters) —
+duplicate ToAs are detected and reported, and only made fatal when
+`reject_duplicate_timestamps=True`. Episode duration is reported and can be
+bounded via `min/max_duration_us`.
+
+The `data_validation/` package at the repo root provides:
+
+| Module              | Responsibility                                         |
+|---------------------|--------------------------------------------------------|
+| `config.py`         | `ValidationConfig` — the physical rules                |
+| `validator.py`      | `RecordValidator`, `validate_parsed_record`, `normalize_aoa` — reusable gate |
+| `clean_output.py`   | Migrate old `output_*.txt` (validate → drop → renumber → rebuild counts → report) |
+| `__main__.py`       | CLI (`--validate`, `--clean`, report dirs)            |
+
+Cleaner (one-off migration only — fresh transformations are already validated):
+
+```bash
+python -m data_validation --clean \
+  --output-dir "VALIDATED OUTPUT FILES" --report-dir "validation_reports" \
+  "OUTPUT FILES/output*.txt"
+```
+
+Validate-only (writes `validation_reports/*.validation.json` without rewriting):
+
+```bash
+python -m data_validation --validate "OUTPUT FILES/output*.txt"
+```
+
 
 ## Usage
 
@@ -119,8 +168,13 @@ print(env.total_entries, env.total_exits, env.total_snapshots)
 | `-o, --output`              | NDJSON output path (default: stdout)                          |
 | `-s, --snapshot-interval-us`| Snapshot period in microseconds (`None` disables)             |
 | `--no-entries/--no-exits/--no-snapshots` | Suppress that event type                      |
-| `--min-pw-us`               | Treat pulse widths below this as instantaneous                |
-| `--nonfinite`               | `allow`/`drop`/`raise` for `inf`/`nan` in freq/amp/aoa (default `allow`) |
+| `--min-pw-us`               | Reserved (invalid PW records are rejected, not clamped)       |
+| `--nonfinite`               | `allow`/`drop`/`raise` for `inf`/`nan`/`PW<=0` (default `drop`) |
+| `--min/max-frequency-mhz`   | Frequency bounds (defaults: strictly positive, no max)        |
+| `--min/max-aoa-deg`         | Canonical AoA range (default `0..360`)                         |
+| `--no-normalize-aoa`        | Do not fold signed AoA into `[0, 360)`                         |
+| `--reject-duplicate-timestamps` | Reject equal shared ToA (default: preserve + report)        |
+| `--min/max-duration-us`     | Episode duration bounds (reported)                            |
 | `-v, --verbose`             | Print a run summary to stderr                                 |
 
 ---
@@ -158,18 +212,21 @@ Windows are slices of interleaved pulse-descriptor-word (PDW) vectors; each
 row's `emitter_id` is the grouping target for metric / triplet-loss deinterleave
 training. `normalized_features(stats)` applies the train-fitted z-score stats.
 
-### Non-finite records
-The corpus can contain `inf`/`nan` in `frequency_mhz`/`amplitude_db`/`aoa_deg`.
-The `nonfinite` policy (also `--nonfinite`) selects the behaviour:
+### Non-finite / invalid records
+The legacy corpus can contain `inf`/`nan` in
+`frequency_mhz`/`amplitude_db`/`aoa_deg` and occasional `PW <= 0`. The
+`nonfinite` policy (also `--nonfinite`) selects the behaviour, defaulting to
+**`drop`** so invalid data is not silently passed on:
 
 | policy   | behaviour                                                              |
 |----------|------------------------------------------------------------------------|
-| `allow`  | keep the values (default for the *simulation* environment)            |
-| `drop`   | skip the offending record, keep building (default for ML windows)     |
+| `drop`   | skip the offending record, keep building (default everywhere)         |
 | `raise`  | fail loudly on the first bad record                                   |
+| `allow`  | keep the values (legacy; not recommended)                             |
 
 `FeatureStats.fit` also skips non-finite values per feature so a stray bad value
-can never turn its statistics into `nan`.
+can never turn its statistics into `nan`. Invalid `PW <= 0` records are always
+rejected (never turned into zero-duration pulses).
 
 ---
 
@@ -191,8 +248,10 @@ can never turn its statistics into `nan`.
 
 ## Notes
 
-* Pulse widths that are negative or below `--min-pw-us` are treated as
-  **instantaneous** (enter at ToA and exit immediately), matching the few
-  non-physical values present in the source data.
+* Invalid records are rejected at the validation layer upstream. A record with
+  `PW <= 0`, `NaN`/`Inf`, `ToA < 0`, decreasing ToA, or `Frequency <= 0` never
+  enters the environment and never produces a zero-duration `entry`+`exit` pair.
+* Signed AoA is normalized to `[0, 360)` both at the validation gate and, as a
+  defense-in-depth, in the receiver environment.
 * `sim_env/timeline_reader.py` provides `iter_events()`, a streaming reader an
-  ML scheduler can use today to consume the log.
+  ML scheduler can use today to consume the log line by line.

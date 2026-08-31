@@ -32,7 +32,7 @@ from typing import Any, Optional, TextIO, Union
 from .config import FEATURE_FIELDS, FEATURE_UNITS, SimConfig
 from .environment import SimulationEvent
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 class TimelineWriter:
@@ -67,9 +67,15 @@ class TimelineWriter:
         meta: dict[str, Any] = {
             "event": "meta",
             "schema_version": SCHEMA_VERSION,
+            "data_validated": True,
             "feature_order": list(self.fields),
             "feature_units": {f: FEATURE_UNITS[f] for f in self.fields},
+            "label": "emitter_id",
             "time_unit": "microseconds",
+            "frequency_unit": "MHz",
+            "pw_unit": "microseconds",
+            "aoa_unit": "degrees",
+            "aoa_range": [self.config.min_aoa_deg, self.config.max_aoa_deg],
             "snapshot_interval_us": self.config.snapshot_interval_us,
             "min_pw_us": self.config.min_pw_us,
         }
