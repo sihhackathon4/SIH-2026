@@ -1,11 +1,12 @@
-"""Integration tests: SieveReceiver against ACTUAL validated RF data + the
-real environment/NDJSON event path.
+"""True RadioEnvironment -> SieveReceiver integration tests.
 
-Run from the repo root (requires a validated output file present):
+These tests deliberately avoid:
 
-    python -m unittest discover -s tests -v
+    receiver.tune(pulse_frequency)
+    receiver.current_time_us = pulse_toa
 
-Uses repository units: frequency in MHz, time in us, amplitude in dB.
+The receiver must operate using its own static scan state and only learn
+about pulses when the RadioEnvironment emits entry/exit events.
 """
 
 from __future__ import annotations
@@ -16,147 +17,472 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SIM_ENV_DIR = REPO_ROOT / "SIMULATION ENV"
-OUTPUT_DIR = REPO_ROOT / "OUTPUT FILES"
 
-sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(SIM_ENV_DIR))
+sys.path.insert(
+    0,
+    str(REPO_ROOT),
+)
+
+sys.path.insert(
+    0,
+    str(SIM_ENV_DIR),
+)
 
 from sim_env import (  # noqa: E402
-    SieveReceiver,
-    SimConfig,
     FileRecordSource,
+    PulseRecord,
     RadioEnvironment,
+    SimConfig,
+    SieveReceiver,
 )
-from sim_env.timeline_writer import TimelineWriter  # noqa: E402
-from sim_env.timeline_reader import iter_events  # noqa: E402
 
-RX_KW = {
-    "total_bandwidth": 18e3,   # MHz (18 GHz)
-    "ibw": 1e3,                # MHz (1 GHz)
-    "frequency_step": 500.0,   # MHz
-    "dwell_time": 100.0,       # us
-    "detection_threshold_db": -140.0,  # real signals ~-100..-120 dB clear this
-}
-
-VALIDATED_FILE = OUTPUT_DIR / "output_134.txt"
+from sim_env.receiver import (  # noqa: E402
+    RadioReceiverBridge,
+    attach_receiver,
+)
 
 
-def _first_clean_records(path, n=5):
-    """Return the first record vectors of a validated file (skip header)."""
-    import re
+def make_record(
+    *,
+    toa_us: float,
+    frequency_mhz: float,
+    pulse_width_us: float,
+    amplitude_db: float = -100.0,
+    aoa_deg: float = 45.0,
+    emitter_id: int = 1,
+    source_id: str = "integration",
+) -> PulseRecord:
+    """Create a repository-native PulseRecord."""
+    return PulseRecord(
+        toa_us=float(toa_us),
+        frequency_mhz=float(
+            frequency_mhz
+        ),
+        pulse_width_us=float(
+            pulse_width_us
+        ),
+        amplitude_db=float(
+            amplitude_db
+        ),
+        aoa_deg=float(
+            aoa_deg
+        ),
+        emitter_id=int(
+            emitter_id
+        ),
+        data=(
+            float(toa_us),
+            float(frequency_mhz),
+            float(pulse_width_us),
+            float(amplitude_db),
+            float(aoa_deg),
+        ),
+        source_id=source_id,
+    )
 
-    rec_re = re.compile(
-        r"data=\[(?P<data>[^\]]*)\]\s*,\s*label=(?P<label>\S+)")
-    vals = []
-    with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            m = rec_re.search(line)
-            if not m:
-                continue
-            data = [float(t) for t in m.group("data").split(",")]
-            vals.append((data, int(m.group("label"))))
-            if len(vals) >= n:
-                break
-    return vals
 
+class TestReceiverEnvironmentIntegration(
+    unittest.TestCase
+):
+    def test_environment_feeds_receiver_without_retuning(
+        self,
+    ):
+        """Environment events reach the receiver through the real callback."""
+        records = [
+            # Initial receiver state:
+            #
+            # center = 500 MHz
+            # window = 0..1000 MHz
+            #
+            # Therefore this pulse should be detected WITHOUT tuning.
+            make_record(
+                toa_us=10.0,
+                frequency_mhz=750.0,
+                pulse_width_us=50.0,
+                emitter_id=1,
+            ),
 
-@unittest.skipUnless(VALIDATED_FILE.exists(), "validated output file not present")
-class TestRealDataIntegration(unittest.TestCase):
-    def test_real_pulse_detected_through_receiver_chain(self):
-        records = _first_clean_records(VALIDATED_FILE)
-        self.assertTrue(records, "no records parsed from real file")
-        toa, freq, pw, amp, aoa = records[0][0]
-        label = records[0][1]
+            # After the first 100 us dwell, the static scanner moves to:
+            #
+            # center = 1000 MHz
+            # window = 500..1500 MHz
+            #
+            # This pulse arrives at 120 us and should be detected.
+            make_record(
+                toa_us=120.0,
+                frequency_mhz=1400.0,
+                pulse_width_us=50.0,
+                emitter_id=2,
+            ),
 
-        r = SieveReceiver(**RX_KW)
-        r.tune(freq)                        # center window on the real frequency
-        # The receiver dwells at the pulse's ToA instant. (Real pulses are
-        # ~0.5 us wide; a 100 us scanning dwell samples inside them only when
-        # it happens to land within this tiny active window. We position the
-        # observation time at the pulse ToA to exercise the full detection
-        # chain on a real sub-microsecond pulse deterministically.)
-        r.current_time_us = toa
+            # Same time, outside the current 500..1500 MHz window.
+            # This must NOT be detected.
+            make_record(
+                toa_us=120.0,
+                frequency_mhz=3000.0,
+                pulse_width_us=50.0,
+                emitter_id=3,
+            ),
+
+            # Same time as the 1400 MHz pulse and also inside the window.
+            # Must remain a separate simultaneous detection.
+            make_record(
+                toa_us=120.0,
+                frequency_mhz=1300.0,
+                pulse_width_us=50.0,
+                emitter_id=4,
+            ),
+        ]
+
+        source = __import__(
+            "sim_env"
+        ).RecordSource(records)
+
+        config = SimConfig(
+            inputs=[],
+            snapshot_interval_us=None,
+        )
+
+        environment = RadioEnvironment(
+            source,
+            config,
+        )
+
+        receiver = SieveReceiver(
+            total_bandwidth=18e3,
+            ibw=1e3,
+            frequency_step=500.0,
+            dwell_time=100.0,
+            detection_threshold_db=-140.0,
+        )
+
+        bridge = attach_receiver(
+            environment,
+            receiver,
+        )
+
+        self.assertIsInstance(
+            bridge,
+            RadioReceiverBridge,
+        )
+
+        # The receiver begins at 500 MHz.
+        self.assertEqual(
+            receiver.center_frequency_mhz,
+            500.0,
+        )
+
+        environment.run()
+
+        # --------------------------------------------------------------
+        # Receiver must have advanced its own clock.
+        # --------------------------------------------------------------
+
+        self.assertGreaterEqual(
+            receiver.current_time_us,
+            120.0,
+        )
+
+        # --------------------------------------------------------------
+        # Receiver must NOT be sitting on 750/1400 MHz because of
+        # pulse-driven retuning.
+        #
+        # At 120 us it has followed the static scan:
+        #
+        #   500 MHz -> 1000 MHz
+        # --------------------------------------------------------------
+
+        self.assertEqual(
+            receiver.center_frequency_mhz,
+            1000.0,
+        )
+
+        # --------------------------------------------------------------
+        # The 750 MHz pulse should have been detected.
+        # --------------------------------------------------------------
+
+        detected_ids = {
+            detection.pulse_id
+            for detection
+            in receiver.detection_history
+        }
+
+        self.assertIn(
+            0,
+            detected_ids,
+        )
+
+        # --------------------------------------------------------------
+        # Pulse at 1400 MHz and pulse at 1300 MHz should both have
+        # been detected at the same environment ToA.
+        # --------------------------------------------------------------
+
+        detections_at_120 = [
+            detection
+            for detection
+            in receiver.detection_history
+            if abs(
+                detection.time_us - 120.0
+            ) < 1e-9
+        ]
+
+        frequencies_at_120 = {
+            round(
+                detection.frequency_mhz,
+                6,
+            )
+            for detection
+            in detections_at_120
+        }
+
+        self.assertIn(
+            1400.0,
+            frequencies_at_120,
+        )
+
+        self.assertIn(
+            1300.0,
+            frequencies_at_120,
+        )
+
+        # 3000 MHz must not be detected.
+        self.assertNotIn(
+            3000.0,
+            frequencies_at_120,
+        )
+
+    def test_receiver_does_not_need_emitter_id_to_detect(
+        self,
+    ):
+        records = [
+            make_record(
+                toa_us=10.0,
+                frequency_mhz=750.0,
+                pulse_width_us=50.0,
+                emitter_id=99,
+            )
+        ]
+
+        # Remove the emitter label from the RF observation by passing
+        # a pulse dictionary without emitter_id.
+        receiver = SieveReceiver(
+            detection_threshold_db=-140.0
+        )
+
+        receiver.current_time_us = 10.0
 
         pulse = {
-            "frequency_mhz": freq,
-            "toa_us": toa,
-            "pulse_width_us": pw,
-            "exit_us": toa + pw,
-            "amplitude_db": amp,
-            "aoa_deg": aoa,
-            "pulse_id": 0,
+            "frequency_mhz": 750.0,
+            "toa_us": 10.0,
+            "pulse_width_us": 50.0,
+            "exit_us": 60.0,
+            "amplitude_db": -100.0,
+            "aoa_deg": 45.0,
+            "pulse_id": 42,
         }
-        det = r.process_pulse(pulse)
-        self.assertIsNotNone(det)
-        self.assertTrue(det.detected)
-        # structured observation uses repository units/fields
-        self.assertAlmostEqual(det.frequency_mhz, freq)
-        self.assertAlmostEqual(det.amplitude_db, amp)
-        self.assertAlmostEqual(det.aoa_deg, aoa)
 
-    def test_real_record_outside_window_not_detected(self):
-        records = _first_clean_records(VALIDATED_FILE, n=2)
-        freq_a = records[0][0][1]
-        freq_b = records[1][0][1]
+        detection = receiver.process_pulse(
+            pulse
+        )
 
-        r = SieveReceiver(**RX_KW)
-        r.tune(freq_a)
-        toa_b = records[1][0][0]
-        r.current_time_us = toa_b
+        self.assertIsNotNone(
+            detection
+        )
 
-        if abs(freq_b - freq_a) > r.ibw_mhz / 2.0:
-            # second pulse frequency is outside the first's window
-            _, _, pw_b, amp_b, aoa_b = records[1][0]
-            pulse_b = {
-                "frequency_mhz": freq_b,
-                "toa_us": toa_b,
-                "pulse_width_us": pw_b,
-                "exit_us": toa_b + pw_b,
-                "amplitude_db": amp_b,
-                "aoa_deg": aoa_b,
+        self.assertTrue(
+            detection.detected
+        )
+
+        # Emitter identity is not required for physical detection.
+        self.assertIsNone(
+            detection.emitter_id
+        )
+
+    def test_nested_ndjson_emitter_id_is_ground_truth_only(
+        self,
+    ):
+        receiver = SieveReceiver(
+            detection_threshold_db=-140.0
+        )
+
+        event = {
+            "event": "entry",
+            "time_us": 10.0,
+            "pulse": {
+                "frequency_mhz": 750.0,
+                "toa_us": 10.0,
+                "pulse_width_us": 50.0,
+                "exit_us": 60.0,
+                "amplitude_db": -100.0,
+                "aoa_deg": 45.0,
+                "pulse_id": 7,
+                "emitter_id": 123,
+            },
+        }
+
+        detection = receiver.process_event(
+            event
+        )
+
+        self.assertIsNotNone(
+            detection
+        )
+
+        self.assertTrue(
+            detection.detected
+        )
+
+        # Ground-truth label is recovered from nested pulse data.
+        self.assertEqual(
+            detection.emitter_id,
+            123,
+        )
+
+    def test_entry_adds_and_exit_removes_pulse(
+        self,
+    ):
+        receiver = SieveReceiver(
+            detection_threshold_db=-140.0
+        )
+
+        entry_event = {
+            "event": "entry",
+            "time_us": 10.0,
+            "pulse": {
+                "frequency_mhz": 750.0,
+                "toa_us": 10.0,
+                "pulse_width_us": 50.0,
+                "exit_us": 60.0,
+                "amplitude_db": -100.0,
+                "aoa_deg": 45.0,
+                "pulse_id": 11,
+                "emitter_id": 2,
+            },
+        }
+
+        receiver.process_event(
+            entry_event
+        )
+
+        self.assertEqual(
+            len(receiver.buffered_pulses()),
+            1,
+        )
+
+        exit_event = {
+            "event": "exit",
+            "time_us": 60.0,
+            "pulse_id": 11,
+            "pulse": entry_event["pulse"],
+        }
+
+        receiver.process_event(
+            exit_event
+        )
+
+        self.assertEqual(
+            len(receiver.buffered_pulses()),
+            0,
+        )
+
+    def test_pulse_outside_frequency_window_is_not_detected(
+        self,
+    ):
+        receiver = SieveReceiver(
+            detection_threshold_db=-140.0
+        )
+
+        receiver.tune(
+            8000.0
+        )
+
+        receiver.current_time_us = 100.0
+        receiver.dwell_start_us = 100.0
+
+        pulse = {
+            "frequency_mhz": 12000.0,
+            "toa_us": 100.0,
+            "pulse_width_us": 50.0,
+            "exit_us": 150.0,
+            "amplitude_db": -80.0,
+            "aoa_deg": 45.0,
+            "pulse_id": 1,
+        }
+
+        self.assertIsNone(
+            receiver.process_pulse(
+                pulse
+            )
+        )
+
+    def test_pulse_outside_time_window_is_not_detected(
+        self,
+    ):
+        receiver = SieveReceiver(
+            detection_threshold_db=-140.0
+        )
+
+        receiver.tune(
+            8000.0
+        )
+
+        receiver.current_time_us = 200.0
+        receiver.dwell_start_us = 200.0
+
+        pulse = {
+            "frequency_mhz": 8000.0,
+            "toa_us": 50.0,
+            "pulse_width_us": 25.0,
+            "exit_us": 75.0,
+            "amplitude_db": -80.0,
+            "aoa_deg": 45.0,
+            "pulse_id": 1,
+        }
+
+        self.assertIsNone(
+            receiver.process_pulse(
+                pulse
+            )
+        )
+
+    def test_reset_clears_live_pulse_buffer(
+        self,
+    ):
+        receiver = SieveReceiver()
+
+        receiver.add_pulse(
+            {
+                "frequency_mhz": 750.0,
+                "toa_us": 10.0,
+                "pulse_width_us": 50.0,
+                "exit_us": 60.0,
+                "amplitude_db": -100.0,
+                "aoa_deg": 45.0,
                 "pulse_id": 1,
             }
-            self.assertIsNone(r.process_pulse(pulse_b))
-        else:
-            # both in the same window -> both must detect (bandwidth model holds)
-            self.assertTrue(r.frequency_in_window(freq_b))
+        )
 
-    def test_ndjson_event_stream_to_receiver(self):
-        """Environment -> NDJSON -> reader(entry) -> SieveReceiver.process_event."""
-        import tempfile
+        self.assertEqual(
+            len(receiver.buffered_pulses()),
+            1,
+        )
 
-        cfg = SimConfig(inputs=[VALIDATED_FILE], snapshot_interval_us=None)
-        source = FileRecordSource([VALIDATED_FILE], on_nonfinite="drop")
-        with tempfile.TemporaryDirectory() as d:
-            log = Path(d) / "timeline.ndjson"
-            writer = TimelineWriter(log, config=cfg)
-            writer.write_meta()
-            RadioEnvironment(source, cfg, on_event=writer.on_event).run()
-            writer.close()
+        receiver.reset()
 
-            r = SieveReceiver(**RX_KW)
-            detections = []
-            for ev in iter_events(log):
-                if ev.get("event") != "entry":
-                    continue
-                pulse = ev["pulse"]
-                # deterministic opportunistic dwell: tune + observe at the entry
-                # instant. The pulse is active for its full width from its ToA,
-                # so sampling at ``time_us`` sees it.
-                r.tune(pulse["frequency_mhz"])
-                r.current_time_us = ev["time_us"]
-                det = r.process_pulse(pulse)
-                if det is not None:
-                    detections.append(det)
+        self.assertEqual(
+            len(receiver.buffered_pulses()),
+            0,
+        )
 
-            # The receiver consumed the real stream and produced structured
-            # observations for every entry it aligned to (all are in-window by
-            # construction and above the low sensitivity floor).
-            self.assertTrue(len(detections) >= 1)
-            obs = detections[0]
-            self.assertTrue(obs.detected)
-            self.assertIn("frequency_mhz", obs.to_dict())
-            self.assertIn("pulse_id", obs.to_dict())
+        self.assertEqual(
+            receiver.current_time_us,
+            0.0,
+        )
+
+        self.assertEqual(
+            receiver.center_frequency_mhz,
+            receiver.legal_center_min_mhz,
+        )
 
 
 if __name__ == "__main__":
