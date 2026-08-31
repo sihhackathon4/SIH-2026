@@ -22,6 +22,8 @@ from .receiver import (
     ReceiverConfigError,
     DetectionObservation,
     ReceiverObservation,
+    RadioReceiverBridge,
+    attach_receiver,
     to_hz,
     to_ghz,
 )
@@ -49,6 +51,8 @@ __all__ = [
     "ReceiverConfigError",
     "DetectionObservation",
     "ReceiverObservation",
+    "RadioReceiverBridge",
+    "attach_receiver",
     "to_hz",
     "to_ghz",
 ]

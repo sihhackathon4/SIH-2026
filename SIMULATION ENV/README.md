@@ -339,6 +339,38 @@ object). They return a structured `DetectionObservation` on detection, else
 `None`, and never advance time or change frequency. Multiple simultaneous pulses
 with equal ToA remain **separate** observations — never merged.
 
+### Time-aware pulse buffer & live environment connection
+The receiver keeps a **time-aware pulse buffer** (`_pulses`) of every pulse it
+has *learned about* from the environment up to the current time:
+
+- `add_pulse(pulse)` buffers a pulse the instant its `entry` event is announced.
+- `remove_pulse(id)` / `advance(t)` clear pulses once their `exit` time has
+  passed (and only then).
+- A buffered pulse is observable during a dwell `[t0, t0 + dwell)` via **interval
+  overlap**: `toa < t0 + dwell` **and** `exit > t0`. This correctly distinguishes
+  pulses that begin/end during a dwell from those entirely before or after it.
+
+A first-class bridge connects the receiver to the live environment stream:
+
+```python
+from sim_env import (SieveReceiver, RadioEnvironment, SimConfig,
+                     FileRecordSource, attach_receiver)
+
+rx = SieveReceiver(total_bandwidth=18e3, ibw=1e3)
+rx.tune(3200.0)                     # one-time configuration, NOT per-pulse retune
+env = RadioEnvironment(FileRecordSource(["OUTPUT FILES/output_134.txt"]), SimConfig())
+attach_receiver(env, rx)            # env's on_event -> receiver buffer (no manual loop)
+env.run()
+obs = rx.scan_once()                # receiver dwells on its own window/clock
+```
+
+The bridge registers a callback on the environment's `on_event` list so live
+`entry`/`exit` events propagate into the receiver buffer **without** any manual
+`receiver.tune(pulse_frequency)` / `receiver.current_time = pulse_time` inside
+the event loop. The receiver keeps its own deterministic clock and scan position
+— it never retunes to an arriving pulse and never learns a pulse before its entry
+event (no future-information leakage).
+
 ### Defensive input handling
 The receiver defensively rejects impossible input rather than silently repairing
 it: `NaN`/`Inf` frequency, `NaN`/`Inf` PW, `PW <= 0`, `NaN` ToA, and negative ToA
@@ -384,7 +416,8 @@ an ML policy without touching the receiver internals.
 | File                                   | Responsibility                                    |
 |----------------------------------------|---------------------------------------------------|
 | `sim_env/receiver/models.py`           | `DetectionObservation`, `ReceiverObservation`     |
-| `sim_env/receiver/sieve_receiver.py`   | `SieveReceiver`, `ReceiverConfigError`, `to_hz`/`to_ghz` |
+| `sim_env/receiver/sieve_receiver.py`   | `SieveReceiver`, `ReceiverConfigError`, `to_hz`/`to_ghz`, time-aware buffer |
+| `sim_env/receiver/adapter.py`          | `RadioReceiverBridge`, `attach_receiver` (live env → receiver) |
 | `sim_env/receiver/__init__.py`         | Public receiver API re-exports                    |
 
 ---

@@ -7,6 +7,7 @@ scheduler. No ML logic lives here.
 """
 
 from .models import DetectionObservation, ReceiverObservation
+from .adapter import RadioReceiverBridge, attach_receiver
 from .sieve_receiver import (
     SieveReceiver,
     ReceiverConfigError,
@@ -22,6 +23,8 @@ from .sieve_receiver import (
 __all__ = [
     "DetectionObservation",
     "ReceiverObservation",
+    "RadioReceiverBridge",
+    "attach_receiver",
     "SieveReceiver",
     "ReceiverConfigError",
     "to_hz",

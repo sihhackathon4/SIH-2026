@@ -152,6 +152,13 @@ class SieveReceiver:
         self.scan_count = 0
         self._scan_direction = 1  # +1 = stepping up; -1 = stepping down
 
+        # Time-aware pulse buffer: pulses the receiver has *learned about* from
+        # the environment up to the current time, keyed by pulse_id. This is the
+        # receiver's honest knowledge of the RF world -- it never contains
+        # pulses that have not yet been announced (no future/information leak),
+        # and pulses are expelled once their exit time has passed.
+        self._pulses: Dict[int, Dict[str, Any]] = {}
+
         self.reset()
 
     # ------------------------------------------------------------------ config
@@ -201,6 +208,7 @@ class SieveReceiver:
         self.last_observation = None
         self.scan_count = 0
         self._scan_direction = 1
+        self._pulses.clear()
 
     # ------------------------------------------------------------------- tune
 
@@ -384,6 +392,11 @@ class SieveReceiver:
         ``timeline_reader.iter_events``, or any object exposing ``.pulse`` /
         ``["pulse"]``. Only ``entry`` events are evaluated (an ``exit`` event
         means the pulse is no longer present). Returns a detection or ``None``.
+
+        This is the single-pulse *instant* evaluation: it checks the pulse
+        against the current observation instant and does not advance the clock.
+        Use :meth:`add_pulse` / the buffer with :meth:`scan_once` for a full
+        time-aware dwell-aware scan.
         """
         if isinstance(event, dict):
             etype = event.get("event")
@@ -398,13 +411,124 @@ class SieveReceiver:
         det = self.could_detect(pulse)
         if not det.detected:
             return None
-        # attach emitter id as ground-truth label from the event, if present
-        if isinstance(event, dict):
-            gt = event.get("emitter_id")
-        else:
-            gt = getattr(event, "emitter_id", None)
+        # Ground-truth emitter id may be nested inside ``pulse`` (the actual
+        # NDJSON structure per ActivePulse.summary_dict) or at the event root.
+        # It is a label for evaluation only -- never required for detection.
+        gt = (pulse.get("emitter_id")
+              if isinstance(pulse, dict) and pulse.get("emitter_id") is not None
+              else (event.get("emitter_id")
+                    if isinstance(event, dict) else None))
+        if gt is None:
+            gt = (getattr(pulse, "emitter_id", None)
+                  if not isinstance(pulse, dict) and hasattr(pulse, "emitter_id")
+                  else None)
         if gt is not None:
             det.emitter_id = int(gt)
+        return det
+
+    # -------------------------------------------------- time-aware pulse buffer
+
+    def add_pulse(self, pulse) -> Optional[Dict[str, Any]]:
+        """Buffer a pulse the receiver has just learned about (its ``entry``).
+
+        The pulse is stored with its full field set plus ``toa_us`` and
+        ``exit_us`` so that later dwells can apply *interval* overlap. This is
+        called as soon as the environment announces the pulse -- the receiver
+        never learns a pulse before its entry event, so there is no future
+        information leakage. Returns the normalized buffer entry, or ``None``
+        for a malformed pulse (defensively ignored, never repaired).
+        """
+        try:
+            values = self._pulse_values(pulse)
+        except Exception:
+            return None
+        freq, toa, exit_us, width, amp, aoa, pid = values
+        if not (math.isfinite(toa) and math.isfinite(exit_us)
+                and math.isfinite(freq)):
+            return None
+        key = int(pid) if pid is not None else len(self._pulses)
+        entry = {
+            "frequency_mhz": freq,
+            "toa_us": toa,
+            "exit_us": exit_us,
+            "pulse_width_us": width if math.isfinite(width) else 0.0,
+            "amplitude_db": amp,
+            "aoa_deg": aoa if math.isfinite(aoa) else 0.0,
+            "pulse_id": pid,
+            "emitter_id": (pulse.get("emitter_id")
+                           if isinstance(pulse, dict) else
+                           getattr(pulse, "emitter_id", None)),
+        }
+        self._pulses[key] = entry
+        return entry
+
+    def remove_pulse(self, pulse_id: Optional[int]) -> None:
+        """Forget a pulse (e.g. on its ``exit`` event)."""
+        if pulse_id is None:
+            return
+        self._pulses.pop(int(pulse_id), None)
+
+    def advance(self, t_us: float) -> float:
+        """Advance the receiver clock to ``t_us``, ending stale pulses.
+
+        Pulses whose ``exit_us <= t_us`` are removed from the buffer because
+        they no longer exist at (or after) the new time. Pulses that have not
+        yet entered are simply absent from the buffer (they appear only when
+        their ``entry`` event is announced via :meth:`add_pulse`). Returns the
+        new current time.
+        """
+        if not math.isfinite(t_us):
+            raise ValueError(f"invalid time {t_us!r}")
+        self.current_time_us = float(t_us)
+        stale = [k for k, p in self._pulses.items()
+                 if p["exit_us"] <= self.current_time_us]
+        for k in stale:
+            del self._pulses[k]
+        return self.current_time_us
+
+    @staticmethod
+    def _overlaps(pulse: Dict[str, Any], t0: float, t1: float) -> bool:
+        """Interval overlap: ``[toa, exit)`` vs ``[t0, t1)``.
+
+        A pulse is observable during a dwell iff its active interval overlaps
+        the dwell interval: ``toa < t1 and exit > t0`` (strict on both sides so
+        a pulse that has already exited at ``t0`` or has not yet started at
+        ``t1`` is not counted).
+        """
+        return pulse["toa_us"] < t1 and pulse["exit_us"] > t0
+
+    def _current_pulses(self) -> List[Any]:
+        """Live pulse set for buffered scanning (the time-aware buffer)."""
+        return list(self._pulses.values())
+
+    def _evaluate_overlap(self, entry: Dict[str, Any],
+                          t0: float, t1: float) -> Optional[DetectionObservation]:
+        """Evaluate a *buffered* pulse against the dwell interval ``[t0, t1)``.
+
+        Frequency must be in the current window (inclusive edges) AND the
+        pulse's active interval must overlap the dwell interval AND its
+        amplitude must clear the dB sensitivity floor. Returns a detection or
+        ``None``.
+        """
+        freq = entry["frequency_mhz"]
+        if not self.frequency_in_window(freq):
+            return None
+        if not self._overlaps(entry, t0, t1):
+            return None
+        amp = entry["amplitude_db"]
+        if not (math.isfinite(amp) and amp >= self.detection_threshold_db):
+            return None
+        det = DetectionObservation(
+            time_us=t0,
+            frequency_mhz=freq,
+            pulse_width_us=entry["pulse_width_us"],
+            amplitude_db=amp,
+            aoa_deg=entry["aoa_deg"],
+            pulse_id=entry["pulse_id"],
+            center_frequency_mhz=self.center_frequency_mhz,
+            detected=True,
+        )
+        det.emitter_id = entry.get("emitter_id")  # ground-truth passthrough
         return det
 
     # -------------------------------------------------------------- scan logic
@@ -423,29 +547,53 @@ class SieveReceiver:
     def scan_once(self, pulses=None) -> ReceiverObservation:
         """One static scan step (deterministic ordering):
 
-        1. observe the current window,
-        2. evaluate every provided pulse (or the receiver's buffered pulses),
+        1. observe the current window over the dwell interval ``[t, t + dwell)``,
+        2. evaluate every buffered pulse for *interval* overlap + detection,
         3. record detections,
         4. advance simulation time by ``dwell_time_us``,
         5. move center frequency by ``frequency_step_mhz``.
 
-        Returns the :class:`ReceiverObservation` for this dwell.
+        ``pulses`` optionally overrides the pulse set (defaults to the
+        receiver's time-aware buffer). Returns the :class:`ReceiverObservation`
+        for this dwell.
         """
-        candidates = self._current_pulses() if pulses is None else pulses
+        t0 = self.current_time_us
+        t1 = t0 + self.dwell_time_us
+        if pulses is None:
+            candidates = self._current_pulses()
+        else:
+            candidates = pulses
         detections = []
         for p in candidates:
-            det = self.process_pulse(p)
+            det = self._candidate_detection(p, t0, t1)
             if det is not None:
                 detections.append(det)
         self._record(detections)
-        self.dwell()
+        self.current_time_us = t1
+        # Any buffered pulse that had already exited by the dwell end is gone.
+        self._prune(t1)
         self.step_up()
         self.scan_count += 1
         return self.last_observation
 
+    def _candidate_detection(self, p, t0: float, t1: float) -> Optional[DetectionObservation]:
+        """Evaluate one candidate (dict buffer entry OR raw pulse object) against
+        a dwell interval ``[t0, t1)``. Buffer dict entries (with an ``exit_us``
+        key) use *interval* overlap; raw pulse objects use the instantaneous
+        evaluation at the dwell start ``t0``."""
+        if isinstance(p, dict) and "exit_us" in p:
+            return self._evaluate_overlap(p, t0, t1)
+        det = self.could_detect(p)
+        return det if (det is not None and det.detected) else None
+
+    def _prune(self, t_us: float) -> None:
+        stale = [k for k, p in self._pulses.items() if p["exit_us"] <= t_us]
+        for k in stale:
+            del self._pulses[k]
+
     def _current_pulses(self) -> List[Any]:
-        """Hook for subclasses to supply the live pulse set for buffered scanning."""
-        return []
+        """Live pulse set for buffered scanning (the time-aware buffer)."""
+        return list(self._pulses.values())
 
     def scan(self, n_pulses: Optional[int] = None) -> List[ReceiverObservation]:
         """Run ``n_pulses`` scan steps (or until time/frequency bounds stabilize).
@@ -495,9 +643,5 @@ class SieveReceiver:
         if a == ACTION_STEP_DOWN:
             return self.step_down()
         if a == ACTION_DWELL:
-            dets = [d for d in (self.process_pulse(p) for p in self._current_pulses())
-                    if d is not None]
-            self._record(dets)
-            self.dwell()
-            return self.last_observation
+            return self.scan_once()
         raise ValueError(f"unknown action {action!r}")
