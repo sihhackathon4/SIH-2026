@@ -89,11 +89,11 @@ class TestLiveEnvironmentToReceiver(unittest.TestCase):
         max_buffer = 0
         while not env.done:
             env.step()
-            max_buffer = max(max_buffer, len(r._pulses))
+            max_buffer = max(max_buffer, len(r.buffered_pulses()))
         # The buffer was populated during the run (live flow) and empties once
         # every pulse exits (no stale leakage) -> honest end state.
         self.assertGreater(max_buffer, 0)
-        self.assertEqual(len(r._pulses), 0)
+        self.assertEqual(len(r.buffered_pulses()), 0)
 
     def test_live_stream_detects_eligible_real_pulse(self):
         cfg = SimConfig(inputs=[VALIDATED_FILE], snapshot_interval_us=None)
@@ -106,14 +106,14 @@ class TestLiveEnvironmentToReceiver(unittest.TestCase):
         # Stop as soon as the environment has announced a live entry pulse.
         while not env.done:
             env.step()
-            if len(r._pulses) > 0:
+            if len(r.buffered_pulses()) > 0:
                 break
-        self.assertGreater(len(r._pulses), 0)
+        self.assertGreater(len(r.buffered_pulses()), 0)
 
         # The receiver then dwells on its OWN window over the pulse's active
         # interval (a single advance, not a per-pulse retune). Every buffered,
         # in-band, overlapping real pulse is reported with structured fields.
-        r.advance(min(p["toa_us"] for p in r._pulses.values()) - 1.0)
+        r.advance(min(getattr(p, "toa_us") for p in r.buffered_pulses()) - 1.0)
         dets = r.scan_once().detections
         self.assertIsInstance(dets, list)
         self.assertGreaterEqual(len(dets), 1)
@@ -329,9 +329,9 @@ class TestPulseBufferState(unittest.TestCase):
         r.add_pulse({"frequency_mhz": 3000.0, "toa_us": 100.0, "exit_us": 200.0,
                      "pulse_width_us": 100.0, "amplitude_db": -120.0,
                      "aoa_deg": 90.0, "pulse_id": 1, "emitter_id": 5})
-        self.assertIn(1, r._pulses)                 # entry -> buffer
+        self.assertIn(1, {p["pulse_id"] for p in r.buffered_pulses()})
         r.remove_pulse(1)                            # exit -> removed
-        self.assertNotIn(1, r._pulses)
+        self.assertNotIn(1, {p["pulse_id"] for p in r.buffered_pulses()})
 
     def test_active_buffer_reflects_lifetime(self):
         r = _rx()
@@ -343,19 +343,19 @@ class TestPulseBufferState(unittest.TestCase):
                      "aoa_deg": 90.0, "pulse_id": 2, "emitter_id": 6})
         # Both active from toa 100; after advancing past pulse 1's exit it is gone.
         r.advance(150.0)
-        self.assertEqual(set(r._pulses.keys()), {1, 2})
+        self.assertEqual({p["pulse_id"] for p in r.buffered_pulses()}, {1, 2})
         r.advance(250.0)                             # pulse 1 exit (200) passed
-        self.assertEqual(set(r._pulses.keys()), {2})
+        self.assertEqual({p["pulse_id"] for p in r.buffered_pulses()}, {2})
 
     def test_reset_clears_pulse_state(self):
         r = _rx()
-        self.assertEqual(len(r._pulses), 0)
+        self.assertEqual(len(r.buffered_pulses()), 0)
         r.add_pulse({"frequency_mhz": 3000.0, "toa_us": 100.0, "exit_us": 200.0,
                      "pulse_width_us": 100.0, "amplitude_db": -120.0,
                      "aoa_deg": 90.0, "pulse_id": 3, "emitter_id": 1})
-        self.assertEqual(len(r._pulses), 1)
+        self.assertEqual(len(r.buffered_pulses()), 1)
         r.reset()
-        self.assertEqual(len(r._pulses), 0)          # no stale pulses remain
+        self.assertEqual(len(r.buffered_pulses()), 0)          # no stale pulses remain
         self.assertEqual(r.dwell_start_us, 0.0)
         self.assertEqual(r.dwell_end_us, 0.0)
 
@@ -423,13 +423,13 @@ class TestCriticalEndToEnd(unittest.TestCase):
         max_buffer = 0
         while not env.done:
             env.step()                   # env drives the simulated clock
-            max_buffer = max(max_buffer, len(rx._pulses))
-            if len(rx._pulses) > 0:      # receiver dwells on its own schedule
+            max_buffer = max(max_buffer, len(rx.buffered_pulses()))
+            if len(rx.buffered_pulses()) > 0:      # receiver dwells on its own schedule
                 observations.append(rx.scan_once())
 
         # Live event path populated then drained the buffer (no stale state).
         self.assertGreater(max_buffer, 0)
-        self.assertEqual(len(rx._pulses), 0)
+        self.assertEqual(len(rx.buffered_pulses()), 0)
 
         # Only the first dwell overlaps the two simultaneous in-band pulses:
         # P1/P2 (3200 & 3300, toa 100, active [100,130)) are BOTH detected and

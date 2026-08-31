@@ -119,6 +119,11 @@ class SieveReceiver:
         # Start of the currently active dwell interval.
         self.dwell_start_us = 0.0
 
+        # End (exclusive) of the current / most recent dwell interval.  Together
+        # with ``dwell_start_us`` this defines ``dwell_interval_us`` on every
+        # :class:`ReceiverObservation`.
+        self.dwell_end_us = 0.0
+
         # Detections belonging to the most recently completed/manual dwell.
         self.detections: List[DetectionObservation] = []
 
@@ -145,6 +150,12 @@ class SieveReceiver:
 
         # Static scan direction used by the internal scan loop.
         self._scan_direction = 1
+
+        # Whether the receiver has acquired at least one RF pulse.  Until the
+        # first pulse is known the receiver waits at its configured center; the
+        # deterministic scan only starts consuming dwell positions once there is
+        # signal to scan for.
+        self._has_seen_pulse = False
 
         self.reset()
 
@@ -253,6 +264,7 @@ class SieveReceiver:
 
         self.current_time_us = 0.0
         self.dwell_start_us = 0.0
+        self.dwell_end_us = 0.0
 
         self.detections = []
         self.last_observation = None
@@ -262,6 +274,8 @@ class SieveReceiver:
 
         self.scan_count = 0
         self._scan_direction = 1
+
+        self._has_seen_pulse = False
 
     # ================================================================
     # Tuning
@@ -782,6 +796,10 @@ class SieveReceiver:
         if detection_time >= exit_us:
             return None
 
+        emitter_id = (
+            self._pulse_emitter_id(pulse)
+        )
+
         return DetectionObservation(
             time_us=detection_time,
             frequency_mhz=frequency_mhz,
@@ -793,7 +811,31 @@ class SieveReceiver:
                 self.center_frequency_mhz
             ),
             detected=True,
+            emitter_id=emitter_id,
         )
+
+    @staticmethod
+    def _pulse_emitter_id(pulse) -> Optional[int]:
+        """Extract the ground-truth emitter ID (if present) from a pulse.
+
+        This is a *label* for evaluation only; it is never required for
+        physical detection.
+        """
+        if isinstance(pulse, dict):
+            value = pulse.get(
+                "emitter_id"
+            )
+        else:
+            value = getattr(
+                pulse,
+                "emitter_id",
+                None,
+            )
+
+        if value is None:
+            return None
+
+        return int(value)
 
     # ================================================================
     # Direct pulse API
@@ -803,16 +845,34 @@ class SieveReceiver:
         self,
         pulse,
     ) -> DetectionObservation:
-        """Evaluate one pulse at the receiver's current instant."""
-        (
-            frequency_mhz,
-            toa_us,
-            exit_us,
-            width_us,
-            amplitude_db,
-            aoa_deg,
-            pulse_id,
-        ) = self._pulse_values(pulse)
+        """Evaluate one pulse at the receiver's current instant.
+
+        A malformed pulse (missing / non-finite / non-positive fields) is
+        reported as *not detected* rather than raising, so that a single bad
+        record in a live event stream cannot crash the receiver.  Strict
+        validation is preserved for :meth:`add_pulse`, which refuses to buffer
+        an invalid pulse.
+        """
+        try:
+            (
+                frequency_mhz,
+                toa_us,
+                exit_us,
+                width_us,
+                amplitude_db,
+                aoa_deg,
+                pulse_id,
+            ) = self._pulse_values(pulse)
+        except (
+            TypeError,
+            ValueError,
+        ):
+            return DetectionObservation(
+                detected=False,
+                center_frequency_mhz=(
+                    self.center_frequency_mhz
+                ),
+            )
 
         return self._evaluate(
             frequency_mhz,
@@ -881,6 +941,9 @@ class SieveReceiver:
         )
 
         self._pulse_buffer[key] = pulse
+
+        # First acquisition: from here the deterministic scan may begin.
+        self._has_seen_pulse = True
 
         return key
 
@@ -1030,6 +1093,10 @@ class SieveReceiver:
             ),
             ibw_mhz=self.ibw_mhz,
             dwell_time_us=self.dwell_time_us,
+            dwell_interval_us=[
+                self.dwell_start_us,
+                self.dwell_end_us,
+            ],
             window_mhz=list(
                 self.get_frequency_window()
             ),
@@ -1116,19 +1183,90 @@ class SieveReceiver:
 
     def dwell(self) -> float:
         """Advance receiver clock by one dwell without changing frequency."""
-        self.current_time_us += (
-            self.dwell_time_us
-        )
+        start = self.current_time_us
+        end = start + self.dwell_time_us
 
-        self.dwell_start_us = (
-            self.current_time_us
-        )
+        self.current_time_us = end
+
+        # The dwell interval just traversed.
+        self.dwell_start_us = start
+        self.dwell_end_us = end
+
+        self._prune(end)
 
         return self.current_time_us
 
     # ================================================================
     # Environment-time synchronization
     # ================================================================
+
+    def _prune(self, now_us: float) -> None:
+        """Drop buffered pulses whose active interval has already ended.
+
+        A pulse is forgotten once its ``exit`` time (exclusive) has passed,
+        i.e. ``exit_us <= now_us``.  Removal is strictly time-based and never
+        tuned to a pulse's frequency.
+        """
+        removed = [
+            key
+            for key, pulse in self._pulse_buffer.items()
+            if self._pulse_exit_us(pulse) <= now_us
+        ]
+
+        for key in removed:
+            del self._pulse_buffer[key]
+
+    @staticmethod
+    def _pulse_exit_us(pulse) -> float:
+        """Return ``exit_us`` for a buffered pulse dict or object."""
+        if isinstance(pulse, dict):
+            value = pulse.get(
+                "exit_us",
+                pulse.get("time_us"),
+            )
+        else:
+            value = getattr(
+                pulse,
+                "exit_us",
+                getattr(pulse, "time_us", None),
+            )
+
+        return float(value)
+
+    def advance(
+        self,
+        target_time_us: float,
+    ) -> None:
+        """Advance the receiver clock to the start of the next dwell.
+
+        This is a *pure* time advance: it positions the receiver at
+        ``target_time_us`` WITHOUT processing intermediate dwell intervals and
+        WITHOUT changing the center frequency.  The clock is monotonic (it
+        never moves backwards) and prunes any buffered pulse whose ``exit``
+        time has passed.
+        """
+        target = float(
+            target_time_us
+        )
+
+        if not math.isfinite(target):
+            raise ValueError(
+                f"target_time_us must be finite, got {target!r}"
+            )
+
+        # Monotonic: clamp a request that would rewind the clock to the
+        # current time instead of moving backwards.
+        if target < self.current_time_us:
+            target = self.current_time_us
+
+        self.current_time_us = target
+        self.dwell_start_us = target
+        self.dwell_end_us = (
+            target
+            + self.dwell_time_us
+        )
+
+        self._prune(target)
 
     def advance_to(
         self,
@@ -1143,7 +1281,10 @@ class SieveReceiver:
         dwell intervals. Completed dwell intervals are processed against
         only pulses that have already arrived in the receiver buffer.
 
-        ``target_time_us`` must not be earlier than the current time.
+        ``target_time_us`` must not be earlier than the current time; if an
+        event arrives at a time the receiver has already processed (because it
+        dwelled ahead), the clock is clamped rather than rewound, preserving a
+        strict monotonic timeline.
         """
         target = float(
             target_time_us
@@ -1154,55 +1295,94 @@ class SieveReceiver:
                 f"target_time_us must be finite, got {target!r}"
             )
 
-        if target < self.current_time_us:
-            raise ValueError(
-                "receiver time cannot move backwards: "
-                f"{target} < {self.current_time_us}"
-            )
+        # Monotonic: never rewind.  A stale event is processed at the current
+        # receiver time rather than moving the clock backwards; no already-
+        # completed dwell is re-processed.
+        backward = (
+            target < self.current_time_us
+        )
+
+        target = max(
+            target,
+            self.current_time_us,
+        )
 
         observations: List[
             ReceiverObservation
         ] = []
 
-        while (
-            target
-            >= self.dwell_start_us
-            + self.dwell_time_us
-        ):
-            dwell_end = (
-                self.dwell_start_us
+        if not backward:
+            while (
+                target
+                >= self.dwell_start_us
                 + self.dwell_time_us
-            )
-
-            detections = (
-                self._detect_buffered_interval(
-                    self.dwell_start_us,
-                    dwell_end,
+            ):
+                dwell_start = (
+                    self.dwell_start_us
                 )
-            )
 
-            self.current_time_us = (
-                dwell_end
-            )
+                dwell_end = (
+                    dwell_start
+                    + self.dwell_time_us
+                )
 
-            observation = self._record(
-                detections,
-                observation_time_us=dwell_end,
-            )
+                self.current_time_us = (
+                    dwell_end
+                )
 
-            observations.append(
-                observation
-            )
+                if self._has_seen_pulse:
+                    detections = (
+                        self._detect_buffered_interval(
+                            dwell_start,
+                            dwell_end,
+                        )
+                    )
 
-            self.dwell_start_us = (
-                dwell_end
-            )
+                    self.dwell_start_us = (
+                        dwell_start
+                    )
+                    self.dwell_end_us = (
+                        dwell_end
+                    )
 
-            self._advance_scan_frequency()
+                    observation = self._record(
+                        detections,
+                        observation_time_us=dwell_end,
+                    )
 
-            self.scan_count += 1
+                    observations.append(
+                        observation
+                    )
+
+                    self.dwell_start_us = (
+                        dwell_end
+                    )
+                    self.dwell_end_us = (
+                        dwell_end
+                        + self.dwell_time_us
+                    )
+
+                    self._advance_scan_frequency()
+
+                    self.scan_count += 1
+                else:
+                    # Empty dwell: pure clock advance.  The scan position is
+                    # only consumed by dwells the receiver actually observes.
+                    self.dwell_start_us = (
+                        dwell_end
+                    )
+                    self.dwell_end_us = (
+                        dwell_end
+                        + self.dwell_time_us
+                    )
 
         self.current_time_us = target
+
+        # ``dwell_start_us`` deliberately persists: it is the start of the next
+        # unprocessed dwell and is only advanced when a dwell is actually
+        # traversed inside the loop above.
+
+        self._prune(target)
 
         return observations
 
@@ -1539,6 +1719,9 @@ class SieveReceiver:
         )
 
         self.dwell_start_us = (
+            dwell_start
+        )
+        self.dwell_end_us = (
             dwell_end
         )
 
@@ -1548,6 +1731,8 @@ class SieveReceiver:
                 dwell_start
             ),
         )
+
+        self._prune(dwell_end)
 
         self._advance_scan_frequency()
 
@@ -1654,8 +1839,13 @@ class SieveReceiver:
             )
 
             self.dwell_start_us = (
+                dwell_start
+            )
+            self.dwell_end_us = (
                 dwell_end
             )
+
+            self._prune(dwell_end)
 
             return observation
 
