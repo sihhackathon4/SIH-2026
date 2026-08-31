@@ -71,6 +71,25 @@ class SimConfig:
             Feature field names, in the exact 5-element data order of the
             source files. Kept as configuration so the ingestion layer is
             data-order independent.
+        nonfinite:
+            How to treat records whose ``frequency_mhz`` / ``amplitude_db`` /
+            ``aoa_deg`` values are ``inf`` / ``nan`` (a real occurrence in this
+            corpus). One of:
+
+            * ``"allow"`` (default) -- pass non-finite values through untouched.
+              Right for the *simulation* environment, where every pulse is a
+              real emission to be modelled regardless of a bad feature value.
+            * ``"drop"`` -- skip the offending record entirely but keep building
+              the stream/window set. Right for building an ML dataset, where a
+              single bad feature would corrupt every statistic and gradient
+              computed from it.
+            * ``"raise"`` -- fail loudly on the first non-finite record, so you
+              consciously decide how to handle it rather than silently training
+              on corruption.
+
+            Non-finite ``pulse_width_us`` is handled separately and always
+            treated as *instantaneous* by the environment, independent of this
+            policy.
     """
 
     inputs: Sequence[Union[str, Path]] = field(default_factory=list)
@@ -83,12 +102,18 @@ class SimConfig:
     emit_exits: bool = True
     emit_snapshots: bool = True
     fields: tuple = (TOA_US, FREQ_MHZ, PW_US, AMP_DB, AOA_DEG)
+    nonfinite: str = "allow"
 
     def __post_init__(self) -> None:
         if isinstance(self.inputs, (str, Path)):
             self.inputs = [self.inputs]
         if self.snapshot_interval_us is not None:
             self.snapshot_interval_us = max(0, self.snapshot_interval_us)
+        if self.nonfinite not in ("allow", "drop", "raise"):
+            raise ValueError(
+                f"unknown 'nonfinite' policy {self.nonfinite!r}; "
+                "expected one of 'allow', 'drop', 'raise'"
+            )
 
 
 @dataclass
@@ -122,21 +147,30 @@ class FeatureStats:
         """Compute mean/std per feature over an iterable of PulseRecord objects.
 
         Streams the iterable once (does not require it to fit in memory).
+        Non-finite values are skipped per feature, so a stray ``inf``/``nan``
+        can never propagate into ``nan`` statistics -- an ML pipeline should
+        also drop such records at ingestion time (``nonfinite="drop"``), but
+        this makes the fit itself robust regardless.
         """
         import math
 
         sums = {f: 0.0 for f in fields}
         sumsq = {f: 0.0 for f in fields}
-        n = 0
+        counts = {f: 0 for f in fields}
+        any_seen = False
         for rec in records:
             values = dict(zip(FEATURE_FIELDS, rec.data))
             for f in fields:
                 v = float(values[f])
+                if not math.isfinite(v):
+                    continue
                 sums[f] += v
                 sumsq[f] += v * v
-            n += 1
-        if n == 0:
-            raise ValueError("cannot fit FeatureStats on zero records")
-        mean = {f: sums[f] / n for f in fields}
-        std = {f: math.sqrt(max(sumsq[f] / n - mean[f] ** 2, 0.0)) or 1.0 for f in fields}
+                counts[f] += 1
+                any_seen = True
+        if not any_seen:
+            raise ValueError("cannot fit FeatureStats on zero (finite) records")
+        mean = {f: sums[f] / counts[f] for f in fields}
+        std = {f: math.sqrt(max(sumsq[f] / counts[f] - mean[f] ** 2, 0.0)) or 1.0
+               for f in fields}
         return cls(mean=mean, std=std)

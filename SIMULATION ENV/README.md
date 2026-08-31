@@ -120,7 +120,56 @@ print(env.total_entries, env.total_exits, env.total_snapshots)
 | `-s, --snapshot-interval-us`| Snapshot period in microseconds (`None` disables)             |
 | `--no-entries/--no-exits/--no-snapshots` | Suppress that event type                      |
 | `--min-pw-us`               | Treat pulse widths below this as instantaneous                |
+| `--nonfinite`               | `allow`/`drop`/`raise` for `inf`/`nan` in freq/amp/aoa (default `allow`) |
 | `-v, --verbose`             | Print a run summary to stderr                                 |
+
+---
+
+## Building an ML deinterleaving dataset
+
+Beyond the raw event stream, the package ships a deinterleaving-focused data
+layer. Each RF record file is treated as an **independent episode** (own emitter
+population), so episodes are never spliced together and never split across
+train/val/test.
+
+### Deterministic episode split
+```python
+from sim_env import split_files
+import glob
+paths = sorted(glob.glob("OUTPUT FILES/output*.txt"))
+splits = split_files(paths, val_fraction=0.15, test_fraction=0.15)
+# -> {"train": [Path...], "val": [...], "test": [...]}
+```
+Split is keyed on each file's stem (e.g. `output_7`) via SHA-256, so it is
+reproducible across runs and machines.
+
+### Fixed-length pulse-sequence windows
+```python
+from sim_env import iter_episode_windows, FeatureStats, FileRecordSource
+
+stats = FeatureStats.fit(FileRecordSource(splits["train"]))  # fit on train ONLY
+
+for split in ("train", "val", "test"):
+    windows = list(iter_episode_windows(splits[split], window_len=64,
+                                        stride=64, nonfinite="drop"))
+    # windows[i].features : [64][5], .emitter_ids : [64], .source_id : episode
+```
+Windows are slices of interleaved pulse-descriptor-word (PDW) vectors; each
+row's `emitter_id` is the grouping target for metric / triplet-loss deinterleave
+training. `normalized_features(stats)` applies the train-fitted z-score stats.
+
+### Non-finite records
+The corpus can contain `inf`/`nan` in `frequency_mhz`/`amplitude_db`/`aoa_deg`.
+The `nonfinite` policy (also `--nonfinite`) selects the behaviour:
+
+| policy   | behaviour                                                              |
+|----------|------------------------------------------------------------------------|
+| `allow`  | keep the values (default for the *simulation* environment)            |
+| `drop`   | skip the offending record, keep building (default for ML windows)     |
+| `raise`  | fail loudly on the first bad record                                   |
+
+`FeatureStats.fit` also skips non-finite values per feature so a stray bad value
+can never turn its statistics into `nan`.
 
 ---
 
@@ -132,7 +181,9 @@ print(env.total_entries, env.total_exits, env.total_snapshots)
 | `sim_env/environment.py`| Event-driven sweep + active-pulse tracking        |
 | `sim_env/timeline_writer.py` | NDJSON event-log writer + self-describing meta |
 | `sim_env/timeline_reader.py` | Stream the NDJSON log back for an ML scheduler |
-| `sim_env/config.py`     | Tuning parameters and field/unit definitions      |
+| `sim_env/config.py`     | Tuning parameters, field/unit definitions, `FeatureStats` |
+| `sim_env/splits.py`     | Deterministic episode-level train/val/test split |
+| `sim_env/dataset.py`    | Windowed pulse-sequence dataset + live collector |
 | `sim_env/cli.py`        | Command-line entry point                          |
 | `run.py`                | Convenience launcher                              |
 

@@ -68,6 +68,12 @@ def _build_parser() -> argparse.ArgumentParser:
              "instantaneous. Default: 0.0",
     )
     p.add_argument(
+        "--nonfinite", choices=["allow", "drop", "raise"], default="allow",
+        help="How to treat inf/nan in frequency/amplitude/aoa. 'allow' keeps "
+             "them (default, for simulation); 'drop' skips the record; "
+             "'raise' fails loudly. For ML dataset building prefer --drop.",
+    )
+    p.add_argument(
         "--count-records", action="store_true",
         help="Pre-scan the inputs to count total records (extra pass).",
     )
@@ -93,18 +99,19 @@ def main(argv: Optional[list] = None) -> int:
         output_log=ns.output,
         snapshot_interval_us=ns.snapshot_interval_us,
         min_pw_us=ns.min_pw_us,
+        nonfinite=ns.nonfinite,
         emit_entries=not ns.no_entries,
         emit_exits=not ns.no_exits,
         emit_snapshots=not ns.no_snapshots,
     )
     _emit_selector(config, ns)
 
-    source = FileRecordSource(config.inputs)
+    source = FileRecordSource(config.inputs, on_nonfinite=config.nonfinite)
 
     record_count = None
     if ns.count_records:
         record_count = sum(1 for _ in source)
-        source = FileRecordSource(config.inputs)
+        source = FileRecordSource(config.inputs, on_nonfinite=config.nonfinite)
 
     writer = TimelineWriter(ns.output, config=config)
     writer.write_meta(record_count=record_count)

@@ -56,7 +56,7 @@ class PulseRecord:
 
 
 def parse_record_line(
-    line: str, source_id: str = "", allow_nonfinite: bool = True
+    line: str, source_id: str = "", allow_nonfinite: bool = True, on_nonfinite: str = "allow"
 ) -> Optional[PulseRecord]:
     """Parse a single ``record_N: ...`` line.
 
@@ -67,17 +67,25 @@ def parse_record_line(
     name), so downstream consumers -- notably ML dataset splitting -- can
     trace every pulse back to its recording/session without re-parsing files.
 
-    ``allow_nonfinite`` controls ``frequency_mhz``/``amplitude_db``/
-    ``aoa_deg`` (NOT ``pulse_width_us``, which has its own explicit handling
-    downstream in ``RadioEnvironment``): a real, sizeable slice of the source
-    corpus contains literal ``inf`` values in these fields (confirmed: 12 of
-    46 files, up to ~96% of a file's records). ``True`` (default) preserves
-    the original lenient behavior. Pass ``False`` when building an ML
-    dataset, where silently training on ``inf``/``nan`` features would
-    corrupt every statistic and gradient computed from them -- doing so
-    raises ``ValueError`` on those records instead, so you consciously
-    decide (upstream) whether to skip, clamp, or otherwise fix them.
+    ``allow_nonfinite`` is kept for backward compatibility: ``False`` is
+    equivalent to ``on_nonfinite="raise"``. New code should prefer
+    ``on_nonfinite``, a policy over ``inf``/``nan`` in ``frequency_mhz`` /
+    ``amplitude_db`` / ``aoa_deg`` (NOT ``pulse_width_us``, which is handled
+    downstream in ``RadioEnvironment``):
+
+    * ``"allow"`` (default) -- preserve the non-finite value unchanged.
+    * ``"drop"`` -- return ``None`` for the offending record so the caller can
+      skip it and keep building the stream.
+    * ``"raise"`` -- raise ``ValueError`` so corruption is surfaced instead of
+      silently polluting downstream statistics.
+
+    A real, sizeable slice of the source corpus can contain literal ``inf`` /
+    ``nan`` values in these fields, so the choice matters most when building an
+    ML dataset, where a single bad feature would corrupt every statistic and
+    gradient computed from it.
     """
+    if allow_nonfinite is False and on_nonfinite == "allow":
+        on_nonfinite = "raise"
     m = _RECORD_RE.search(line)
     if m is None:
         return None
@@ -87,11 +95,14 @@ def parse_record_line(
             raise ValueError(f"expected 5 feature values, got {len(toks)}")
         toa, freq, pw, amp, aoa = (float(t) for t in toks)
         label = int(m.group("label"))
-        if not allow_nonfinite:
+        if on_nonfinite != "allow":
             import math
+
             for name, v in (("frequency_mhz", freq), ("amplitude_db", amp), ("aoa_deg", aoa)):
                 if not math.isfinite(v):
-                    raise ValueError(f"non-finite {name}={v!r}")
+                    if on_nonfinite == "raise":
+                        raise ValueError(f"non-finite {name}={v!r}")
+                    return None  # "drop"
     except ValueError as exc:
         raise ValueError(f"malformed record line: {line!r} ({exc})") from exc
     return PulseRecord(
@@ -106,12 +117,17 @@ def parse_record_line(
     )
 
 
-def _iter_records(path: Path, allow_nonfinite: bool = True) -> Iterator[PulseRecord]:
+def _iter_records(
+    path: Path, allow_nonfinite: bool = True, on_nonfinite: str = "allow"
+) -> Iterator[PulseRecord]:
     """Yield every record from one file, in file order (assumed sorted by ToA)."""
     source_id = path.stem  # e.g. "output_0" -- stable, human-readable episode tag
     with open(path, "r", encoding="utf-8") as fh:
         for line in fh:
-            rec = parse_record_line(line, source_id=source_id, allow_nonfinite=allow_nonfinite)
+            rec = parse_record_line(
+                line, source_id=source_id,
+                allow_nonfinite=allow_nonfinite, on_nonfinite=on_nonfinite,
+            )
             if rec is not None:
                 yield rec
 
@@ -147,10 +163,12 @@ class FileRecordSource:
         paths: Sequence[Union[str, Path]],
         resolver: Optional[_Resolver] = None,
         allow_nonfinite: bool = True,
+        on_nonfinite: str = "allow",
     ):
         self._paths = list(paths)
         self._resolver = resolver or _DefaultResolver()
         self._allow_nonfinite = allow_nonfinite
+        self._on_nonfinite = on_nonfinite
         self._files: Iterable[Iterable[PulseRecord]] = []
 
     def _prepare(self) -> None:
@@ -162,7 +180,11 @@ class FileRecordSource:
             {r for r in resolved if r.is_file()},
             key=lambda r: r.name,
         )
-        self._files = [_iter_records(p, allow_nonfinite=self._allow_nonfinite) for p in resolved]
+        self._files = [
+            _iter_records(p, allow_nonfinite=self._allow_nonfinite,
+                          on_nonfinite=self._on_nonfinite)
+            for p in resolved
+        ]
 
     def __iter__(self) -> Iterator[PulseRecord]:
         self._prepare()

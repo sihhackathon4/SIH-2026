@@ -152,6 +152,7 @@ def iter_episode_windows(
     fields: Sequence[str] = FEATURE_FIELDS,
     min_pw_us: float = 0.0,
     drop_partial: bool = True,
+    nonfinite: str = "drop",
 ) -> Iterator[PulseWindow]:
     """Yield windows across many episodes, one episode (file) at a time.
 
@@ -159,14 +160,21 @@ def iter_episode_windows(
     ``RadioEnvironment`` -- episodes are never merged. This is the normal
     entry point for building a training/val/test set: pass it the file list
     for one split (see ``sim_env.splits.split_files``).
+
+    ``nonfinite`` defaults to ``"drop"`` because a single ``inf``/``nan``
+    feature value would corrupt every statistic and gradient computed from
+    the resulting windows; records with non-finite ``frequency_mhz`` /
+    ``amplitude_db`` / ``aoa_deg`` are skipped silently instead of poisoning
+    the dataset. Override with ``"raise"`` to surface them or ``"allow"`` to
+    keep them (not recommended for training).
     """
     from .config import SimConfig  # local import avoids a cycle at module load
 
     for path in paths:
         path = Path(path)
         config = SimConfig(inputs=[path], min_pw_us=min_pw_us,
-                            snapshot_interval_us=None)  # snapshots not needed here
-        source = FileRecordSource(config.inputs)
+                            snapshot_interval_us=None, nonfinite=nonfinite)
+        source = FileRecordSource(config.inputs, on_nonfinite=config.nonfinite)
         collected: List[PulseWindow] = []
         collector = WindowCollector(window_len, stride, fields,
                                      on_window=collected.append,
