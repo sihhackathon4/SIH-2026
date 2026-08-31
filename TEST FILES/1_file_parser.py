@@ -57,8 +57,11 @@ import h5py
 try:
     from data_validation import RecordValidator, ValidationConfig
     _VALIDATION_AVAILABLE = True
-except ImportError:  # pragma: no cover - fallback kept for standalone usage
-    _VALIDATION_AVAILABLE = False
+except ImportError as exec:
+   raise RuntimeError(
+        "data_validation is required. "
+        "Refusing to generate unvalidated output files."
+    ) from exc
 
 # ---------------------------------------------------------------------------
 # Configuration -- adjust these two paths to your layout.
